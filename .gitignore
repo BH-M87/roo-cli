@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+test/
+tests/
+__tests__/
+
+# Build output
+dist/
+build/
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+*.bak
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Version control
+.git/
+.gitattributes
+.svn/
+CVS/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Debug files
+*.sock
+
+# Reports
+reports/
+
+# Documentation
+docs/
+examples/
+example/
+
+# Misc
+.cache/
+*.core
+
