@@ -34,6 +34,33 @@ docker-compose build
 
 ### Running with Docker
 
+#### Using npm/pnpm Scripts
+
+You can use the npm/pnpm scripts defined in `package.json` for quick access to Docker commands:
+
+```bash
+# Build the Docker image
+pnpm docker:build
+
+# Run a command (e.g., show help)
+pnpm docker:run --help
+
+# Create a new task
+pnpm docker:run new "Write a function to calculate the Fibonacci sequence" --mode code
+
+# Start the MCP server
+pnpm docker:mcp
+
+# Use standalone Docker
+pnpm docker:standalone --help
+
+# Build standalone Docker image
+pnpm docker:standalone:build
+
+# Start standalone MCP server
+pnpm docker:standalone:mcp
+```
+
 #### Using docker-compose
 
 You can use the provided scripts to run Roo CLI with docker-compose:

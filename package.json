@@ -10,7 +10,13 @@
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"dev": "ts-node src/index.ts",
-		"test": "jest"
+		"test": "jest",
+		"docker:build": "docker-compose build",
+		"docker:run": "bash docker-run.sh",
+		"docker:mcp": "bash docker-mcp-server.sh",
+		"docker:standalone": "bash docker-run-standalone.sh",
+		"docker:standalone:build": "bash docker-run-standalone.sh --build",
+		"docker:standalone:mcp": "bash docker-run-standalone.sh --mcp-server"
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.37.0",
