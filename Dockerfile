@@ -29,6 +29,9 @@ ENV PATH="/app/node_modules/.bin:${PATH}"
 # 设置工作区目录为卷
 VOLUME ["/workspace"]
 
+# 设置工作目录
+WORKDIR /app
+
 # 设置入口点
 ENTRYPOINT ["node", "dist/index.js"]
 

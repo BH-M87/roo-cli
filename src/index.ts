@@ -20,6 +20,7 @@ import { printMessage } from "./utils/terminal"
 import { CommandOptions, TaskConfig, ApiConfig } from "./types"
 import { McpServerManager } from "./mcp/server"
 import { setApiConfig } from "./core/tools/newTaskTool"
+import { getApiConfig } from "./api/config"
 
 // Load environment variables
 dotenv.config()
@@ -74,7 +75,7 @@ program
 			}
 
 			// Get API configuration from command line options or provider profiles
-			let apiConfig = getApiConfigFromOptions(options)
+			let apiConfig = getApiConfig(options)
 
 			// If no API config from options, use the one from provider profiles
 			if (!apiConfig) {
@@ -86,6 +87,9 @@ program
 					process.exit(1)
 				}
 			}
+
+			// 设置 API 配置，以便工具可以使用
+			setApiConfig(apiConfig)
 
 			if (options.verbose) {
 				printMessage(`Using API provider: ${apiConfig.apiProvider}`, "info")
@@ -158,14 +162,22 @@ program
 				process.exit(1)
 			}
 
-			// Get API configuration
-			const currentApiConfigName = providerProfiles.currentApiConfigName
-			const apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
+			// Get API configuration from command line options or provider profiles
+			let apiConfig = getApiConfig(options)
 
+			// If no API config from options, use the one from provider profiles
 			if (!apiConfig) {
-				printMessage(`Error: API configuration '${currentApiConfigName}' not found`, "error")
-				process.exit(1)
+				const currentApiConfigName = providerProfiles.currentApiConfigName
+				apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
+
+				if (!apiConfig) {
+					printMessage(`Error: API configuration '${currentApiConfigName}' not found`, "error")
+					process.exit(1)
+				}
 			}
+
+			// 设置 API 配置，以便工具可以使用
+			setApiConfig(apiConfig)
 
 			// Create provider
 			const provider = new Provider(apiConfig, settings, customModes)
@@ -404,54 +416,4 @@ program.parse()
 // If no arguments, show help
 if (process.argv.length <= 2) {
 	program.help()
-}
-
-/**
- * Get API configuration from command line options
- * @param options Command options
- * @returns API configuration or undefined if not provided
- */
-function getApiConfigFromOptions(options: CommandOptions): ApiConfig | undefined {
-	// Check if any API-specific options are provided
-	const hasApiOptions =
-		options.apiProvider ||
-		options.openaiApiKey ||
-		options.openaiBaseUrl ||
-		options.openaiModel ||
-		options.anthropicApiKey ||
-		options.anthropicModel
-
-	if (!hasApiOptions) {
-		return undefined
-	}
-
-	// Determine API provider
-	const apiProvider =
-		options.apiProvider || (options.openaiApiKey ? "openai" : options.anthropicApiKey ? "anthropic" : undefined)
-
-	if (!apiProvider) {
-		return undefined
-	}
-
-	// Create API configuration based on provider
-	switch (apiProvider) {
-		case "openai":
-			return {
-				apiProvider: "openai",
-				openAiApiKey: options.openaiApiKey || process.env.OPENAI_API_KEY,
-				openAiBaseUrl: options.openaiBaseUrl || process.env.OPENAI_BASE_URL,
-				openAiModelId: options.openaiModel || process.env.OPENAI_MODEL_ID || "gpt-4",
-				id: "cli-openai",
-			}
-		case "anthropic":
-			return {
-				apiProvider: "anthropic",
-				anthropicApiKey: options.anthropicApiKey || process.env.ANTHROPIC_API_KEY,
-				anthropicModelId:
-					options.anthropicModel || process.env.ANTHROPIC_MODEL_ID || "claude-3-5-sonnet-20241022",
-				id: "cli-anthropic",
-			}
-		default:
-			return undefined
-	}
 }

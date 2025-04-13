@@ -61,6 +61,27 @@ pnpm docker:standalone:build
 pnpm docker:standalone:mcp
 ```
 
+> **注意**: 当使用 Docker 运行 `roo new` 命令时，脚本会自动添加 `--workspace /workspace` 参数，确保文件操作在容器内的挂载目录中进行。本地目录 `${WORKSPACE_PATH}` 会被挂载到容器内的 `/workspace` 目录。
+>
+> 使用示例：
+>
+> ```bash
+> # 指定本地工作区目录
+> ./docker-run-standalone.sh new "创建一个 Node.js 服务器" --workspace="./playground"
+>
+> # 指定 OpenAI API 密钥、基础 URL 和模型 ID
+> ./docker-run-standalone.sh --openai-api-key="sk-your-api-key" --openai-base-url="https://api.example.com/v1" --openai-model="gpt-4o" new "创建一个 Node.js 服务器"
+>
+> # 指定 Anthropic API 密钥和模型 ID
+> ./docker-run-standalone.sh --anthropic-key="sk-ant-your-api-key" --anthropic-model="claude-3-opus-20240229" new "创建一个 Node.js 服务器"
+>
+> # 或者使用环境变量指定工作区目录、API 密钥、基础 URL 和模型 ID
+> WORKSPACE_PATH="./playground" OPENAI_API_KEY="sk-your-api-key" OPENAI_BASE_URL="https://api.example.com/v1" OPENAI_MODEL_ID="gpt-4o" ./docker-run.sh new "创建一个 Node.js 服务器"
+>
+> # 或者使用 Anthropic 模型
+> ANTHROPIC_API_KEY="sk-ant-your-api-key" ANTHROPIC_MODEL_ID="claude-3-opus-20240229" ./docker-run.sh new "创建一个 Node.js 服务器"
+> ```
+
 #### Using docker-compose
 
 You can use the provided scripts to run Roo CLI with docker-compose:

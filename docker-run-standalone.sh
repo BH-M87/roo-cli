@@ -18,21 +18,29 @@ show_help() {
   echo "  --mcp-server             启动 MCP 服务器"
   echo "  --port <端口>            指定 MCP 服务器端口 (默认: 3000)"
   echo "  --workspace <路径>       指定工作区路径 (默认: ./workspace)"
-  echo "  --openai-key <密钥>      设置 OpenAI API 密钥"
+  echo "  --openai-api-key <密钥>   设置 OpenAI API 密钥"
+  echo "  --openai-base-url <URL>   设置 OpenAI API 基础 URL"
+  echo "  --openai-model <模型>     设置 OpenAI 模型 ID (默认: gpt-4)"
   echo "  --anthropic-key <密钥>   设置 Anthropic API 密钥"
+  echo "  --anthropic-model <模型>  设置 Anthropic 模型 ID (默认: claude-3-5-sonnet-20241022)"
   echo "  --help                   显示此帮助信息"
   echo ""
   echo "环境变量:"
   echo "  WORKSPACE_PATH           工作区路径"
   echo "  PORT                     MCP 服务器端口"
   echo "  OPENAI_API_KEY           OpenAI API 密钥"
+  echo "  OPENAI_BASE_URL          OpenAI API 基础 URL"
+  echo "  OPENAI_MODEL_ID          OpenAI 模型 ID"
   echo "  ANTHROPIC_API_KEY        Anthropic API 密钥"
+  echo "  ANTHROPIC_MODEL_ID       Anthropic 模型 ID"
   echo ""
   echo "示例:"
   echo "  $0 --build                                  # 构建 Docker 镜像"
   echo "  $0 new \"创建一个 Node.js 服务器\" --mode code  # 创建新任务"
   echo "  $0 --mcp-server                             # 启动 MCP 服务器"
   echo "  $0 --workspace /path/to/workspace new \"...\" # 指定工作区路径"
+  echo "  $0 --openai-base-url https://api.example.com/v1 new \"...\" # 指定 OpenAI API 基础 URL"
+  echo "  $0 --anthropic-model claude-3-opus-20240229 new \"...\" # 指定 Anthropic 模型 ID"
   echo ""
   exit 0
 }
@@ -41,7 +49,10 @@ show_help() {
 BUILD_IMAGE=false
 START_MCP_SERVER=false
 OPENAI_API_KEY=${OPENAI_API_KEY:-""}
+OPENAI_BASE_URL=${OPENAI_BASE_URL:-""}
+OPENAI_MODEL_ID=${OPENAI_MODEL_ID:-""}
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-""}
+ANTHROPIC_MODEL_ID=${ANTHROPIC_MODEL_ID:-""}
 ROO_COMMAND=""
 
 while [[ $# -gt 0 ]]; do
@@ -62,12 +73,24 @@ while [[ $# -gt 0 ]]; do
     WORKSPACE_PATH="$2"
     shift 2
     ;;
-  --openai-key)
+  --openai-api-key)
     OPENAI_API_KEY="$2"
+    shift 2
+    ;;
+  --openai-base-url)
+    OPENAI_BASE_URL="$2"
+    shift 2
+    ;;
+  --openai-model)
+    OPENAI_MODEL_ID="$2"
     shift 2
     ;;
   --anthropic-key)
     ANTHROPIC_API_KEY="$2"
+    shift 2
+    ;;
+  --anthropic-model)
+    ANTHROPIC_MODEL_ID="$2"
     shift 2
     ;;
   --help)
@@ -107,9 +130,23 @@ fi
 ENV_PARAMS=()
 if [ -n "$OPENAI_API_KEY" ]; then
   ENV_PARAMS+=(-e "OPENAI_API_KEY=$OPENAI_API_KEY")
+  echo "OpenAI API Key 已设置: ${OPENAI_API_KEY:0:5}..."
+fi
+if [ -n "$OPENAI_BASE_URL" ]; then
+  ENV_PARAMS+=(-e "OPENAI_BASE_URL=$OPENAI_BASE_URL")
+  echo "OpenAI Base URL 已设置: $OPENAI_BASE_URL"
+fi
+if [ -n "$OPENAI_MODEL_ID" ]; then
+  ENV_PARAMS+=(-e "OPENAI_MODEL_ID=$OPENAI_MODEL_ID")
+  echo "OpenAI Model ID 已设置: $OPENAI_MODEL_ID"
 fi
 if [ -n "$ANTHROPIC_API_KEY" ]; then
   ENV_PARAMS+=(-e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
+  echo "Anthropic API Key 已设置"
+fi
+if [ -n "$ANTHROPIC_MODEL_ID" ]; then
+  ENV_PARAMS+=(-e "ANTHROPIC_MODEL_ID=$ANTHROPIC_MODEL_ID")
+  echo "Anthropic Model ID 已设置: $ANTHROPIC_MODEL_ID"
 fi
 
 # 启动 MCP 服务器
@@ -136,8 +173,10 @@ if [ "$START_MCP_SERVER" = true ]; then
     --name "$CONTAINER_NAME" \
     -v "$WORKSPACE_PATH:/workspace" \
     -p "$PORT:$PORT" \
-    "${ENV_PARAMS[@]}" \
-    -w /workspace \
+    -e "OPENAI_API_KEY=$OPENAI_API_KEY" \
+    -e "OPENAI_BASE_URL=$OPENAI_BASE_URL" \
+    -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" \
+    -w /app \
     "$IMAGE_NAME" mcp-start --port "$PORT"
 
   exit 0
@@ -145,13 +184,39 @@ fi
 
 # 运行 Roo CLI 命令
 if [ -n "$ROO_COMMAND" ]; then
+  # 检查命令是否包含 new 和 --workspace 参数
+  if [[ "$ROO_COMMAND" == *"new"* && "$ROO_COMMAND" != *"--workspace"* ]]; then
+    # 如果是 new 命令但没有 --workspace 参数，添加 --workspace /workspace
+    ROO_COMMAND="$ROO_COMMAND --workspace /workspace"
+    echo "添加了 --workspace /workspace 参数到命令"
+  fi
+
   echo "运行命令: $ROO_COMMAND"
 
+  # 使用 -w /app 确保容器工作目录是应用程序目录
+  echo "ENV_PARAMS: ${ENV_PARAMS[@]}"
+
+  # 添加调试命令，在容器内部打印环境变量
+  docker run --rm -it \
+    --name "${CONTAINER_NAME}_debug" \
+    -e "OPENAI_API_KEY=$OPENAI_API_KEY" \
+    -e "OPENAI_BASE_URL=$OPENAI_BASE_URL" \
+    -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" \
+    -e "OPENAI_MODEL_ID=$OPENAI_MODEL_ID" \
+    -e "ANTHROPIC_MODEL_ID=$ANTHROPIC_MODEL_ID" \
+    -w /app \
+    "$IMAGE_NAME" bash -c 'echo "OPENAI_API_KEY in container: $OPENAI_API_KEY"; echo "OPENAI_BASE_URL in container: $OPENAI_BASE_URL"'
+
+  # 运行实际命令
   docker run --rm -it \
     --name "$CONTAINER_NAME" \
     -v "$WORKSPACE_PATH:/workspace" \
-    "${ENV_PARAMS[@]}" \
-    -w /workspace \
+    -e "OPENAI_API_KEY=$OPENAI_API_KEY" \
+    -e "OPENAI_BASE_URL=$OPENAI_BASE_URL" \
+    -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" \
+    -e "OPENAI_MODEL_ID=$OPENAI_MODEL_ID" \
+    -e "ANTHROPIC_MODEL_ID=$ANTHROPIC_MODEL_ID" \
+    -w /app \
     "$IMAGE_NAME" $ROO_COMMAND
 else
   # 如果没有提供命令，显示帮助信息

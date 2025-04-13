@@ -4,6 +4,7 @@ import { TextBlock } from "@anthropic-ai/sdk/resources/index.mjs"
 import axios from "axios"
 import { parseAssistantMessage } from "../core/assistant-message"
 import { Message, MessageRole } from "../core/session"
+import { ApiProvider } from "./config"
 
 /**
  * Base class for API handlers
@@ -276,12 +277,15 @@ export class OpenAiHandler extends ApiHandler {
  * @returns API handler instance
  */
 export function createApiHandler(config: ApiConfig): ApiHandler {
-	switch (config.apiProvider) {
-		case "anthropic":
-			return new AnthropicHandler(config)
-		case "openai":
-			return new OpenAiHandler(config)
-		default:
-			throw new Error(`Unsupported API provider: ${config.apiProvider}`)
+	const handlers: Record<string, (config: ApiConfig) => ApiHandler> = {
+		[ApiProvider.ANTHROPIC]: (config) => new AnthropicHandler(config),
+		[ApiProvider.OPENAI]: (config) => new OpenAiHandler(config),
 	}
+
+	const handlerCreator = handlers[config.apiProvider]
+	if (!handlerCreator) {
+		throw new Error(`Unsupported API provider: ${config.apiProvider}`)
+	}
+
+	return handlerCreator(config)
 }
