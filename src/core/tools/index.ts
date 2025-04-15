@@ -4,7 +4,11 @@
 
 import { GlobalSettings } from "../../types"
 import { ToolHandler, ToolRegistry, ToolUse, TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "./types"
-import { readFileTool, writeToFileTool, listFilesTool, executeCommandTool, searchFilesTool } from "./simplified"
+import { readFileTool } from "./readFileTool"
+import { writeToFileTool } from "./writeToFileTool"
+import { listFilesTool } from "./listFilesTool"
+import { executeCommandTool } from "./executeCommandTool"
+import { searchFilesTool } from "./searchFilesTool"
 import { browserActionTool } from "./browserActionTool"
 import { listCodeDefinitionsTool } from "./listCodeDefinitionsTool"
 import { switchModeTool } from "./switchModeTool"
