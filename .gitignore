@@ -60,3 +60,5 @@ example/
 .cache/
 *.core
 
+# Playground
+playground/
