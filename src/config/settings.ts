@@ -6,7 +6,10 @@ import {
   GlobalSettings,
   CustomMode,
 } from "../types";
-import { DEFAULT_PROVIDER_PROFILES } from "./constants";
+import {
+  DEFAULT_PROVIDER_PROFILES,
+  DEFAULT_GLOBAL_SETTINGS,
+} from "./constants";
 
 // Default file names
 const DEFAULT_TASK_FILE = ".rooTask";
@@ -58,12 +61,13 @@ export async function readProviderProfiles(
 /**
  * Read global settings from file
  * @param filePath Path to the global settings file
- * @returns Global settings or null if file doesn't exist
+ * @returns Global settings (default if file doesn't exist)
  */
 export async function readGlobalSettings(
   filePath: string = DEFAULT_SETTINGS_FILE
-): Promise<GlobalSettings | null> {
-  return readJsonFile<GlobalSettings>(filePath);
+): Promise<GlobalSettings> {
+  const settings = await readJsonFile<GlobalSettings>(filePath);
+  return settings || DEFAULT_GLOBAL_SETTINGS;
 }
 
 /**

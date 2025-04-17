@@ -77,11 +77,6 @@ program
       const settings = await readGlobalSettings(options.settingsFile);
       await getMergedCustomModes(settings, options.modesFile);
 
-      if (!settings) {
-        printMessage("Error: Global settings not found", "error");
-        process.exit(1);
-      }
-
       // Get API configuration from command line options or provider profiles
       let apiConfig = getApiConfig(options);
 
@@ -174,13 +169,6 @@ program
         options.modesFile
       );
 
-      // Provider profiles will always be available (default or from file)
-
-      if (!settings) {
-        printMessage("Error: Global settings not found", "error");
-        process.exit(1);
-      }
-
       // Get API configuration from command line options or provider profiles
       let apiConfig = getApiConfig(options);
 
@@ -245,11 +233,6 @@ program
         settings,
         options.modesFile
       );
-
-      if (!settings) {
-        printMessage("Error: Global settings not found", "error");
-        process.exit(1);
-      }
 
       // Create dummy provider (we only need it for tool descriptions)
       const dummyApiConfig = {
