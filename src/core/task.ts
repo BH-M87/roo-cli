@@ -25,8 +25,19 @@ export async function handleNewTask(params: {
 	maxSteps?: number
 	verbose?: boolean
 	auto?: boolean
+	rules?: string
 }): Promise<TaskResult> {
-	const { prompt, mode, apiConfig, cwd, continuous = false, maxSteps = 10, verbose = false, auto = false } = params
+	const {
+		prompt,
+		mode,
+		apiConfig,
+		cwd,
+		continuous = false,
+		maxSteps = 100,
+		verbose = false,
+		auto = false,
+		rules,
+	} = params
 	const taskId = uuidv4()
 	const workingDir = getCurrentWorkingDirectory(cwd)
 
@@ -35,6 +46,7 @@ export async function handleNewTask(params: {
 	console.log(`Prompt: ${prompt}`)
 	console.log(`Continuous mode: ${continuous ? "enabled" : "disabled"}`)
 	console.log(`Auto mode: ${auto ? "enabled" : "disabled"}`)
+	console.log(`Rules: ${rules}`)
 
 	try {
 		// 检查是否使用连续执行模式或自动模式
@@ -50,7 +62,7 @@ export async function handleNewTask(params: {
 			const apiHandler = createApiHandler(apiConfig)
 
 			// 生成系统提示
-			const systemPrompt = generateSystemPrompt(workingDir, mode, undefined, auto)
+			const systemPrompt = generateSystemPrompt(workingDir, mode, undefined, auto, rules)
 
 			// 创建工具执行器
 			const toolExecutor = new ToolExecutor(workingDir, verbose)
@@ -124,5 +136,6 @@ export async function executeTask(
 		maxSteps: options?.maxSteps,
 		verbose: options?.verbose,
 		auto: options?.auto || config.auto,
+		rules: config.rules,
 	})
 }

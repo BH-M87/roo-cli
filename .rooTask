@@ -1,5 +1,5 @@
 {
-	"mode": "code",
-	"message": "返回 package.json 文件的内容",
-	"cwd": "/Users/liuxuheng/OwnDevWorkspaces/Roo-Code-MCP/cli"
+	"mode": "auto",
+	"message": "需求定义在此",
+	"cwd": "/Users/liuxuheng/OwnDevWorkspaces/Roo-Code-MCP/roo-cli"
 }

@@ -19,6 +19,7 @@ export class ContinuousExecutor {
 	private maxSteps: number
 	private verbose: boolean
 	private auto: boolean
+	private rules?: string
 
 	/**
 	 * 构造函数
@@ -36,6 +37,7 @@ export class ContinuousExecutor {
 		maxSteps: number = 1000,
 		verbose: boolean = false,
 		auto: boolean = false,
+		rules?: string,
 	) {
 		this.apiConfig = apiConfig
 		this.mode = mode
@@ -45,6 +47,7 @@ export class ContinuousExecutor {
 		this.maxSteps = maxSteps
 		this.verbose = verbose
 		this.auto = auto
+		this.rules = rules
 	}
 
 	/**
@@ -60,7 +63,7 @@ export class ContinuousExecutor {
 			const apiHandler = createApiHandler(this.apiConfig)
 
 			// 生成系统提示
-			const systemPrompt = generateSystemPrompt(this.cwd, this.mode, undefined, this.auto)
+			const systemPrompt = generateSystemPrompt(this.cwd, this.mode, undefined, this.auto, this.rules)
 
 			// 创建会话
 			this.sessionId = this.sessionManager.createSession(this.mode, this.cwd, systemPrompt)

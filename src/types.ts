@@ -5,6 +5,7 @@ export interface TaskConfig {
 	message: string
 	cwd?: string
 	auto?: boolean
+	rules?: string
 }
 
 export interface ProviderProfile {
@@ -104,4 +105,5 @@ export interface CommandOptions {
 	anthropicApiKey?: string
 	anthropicModel?: string
 	auto?: boolean
+	rules?: string
 }

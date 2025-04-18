@@ -49,6 +49,7 @@ program
 	.option("--openai-model <model>", "OpenAI model ID")
 	.option("--anthropic-api-key <key>", "Anthropic API key")
 	.option("--anthropic-model <model>", "Anthropic model ID")
+	.option("--rules <rules>", "Additional rules to supplement the system prompt")
 	.action(async (promptArg, options: CommandOptions) => {
 		try {
 			// Get prompt from argument or interactive input
@@ -368,6 +369,7 @@ async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<
 			mode: options.mode || config.mode,
 			cwd: options.workspace || config.cwd || process.cwd(),
 			auto: options.auto || options.mode === "auto" || config.mode === "auto" || config.auto,
+			rules: options.rules || config.rules,
 		}
 	}
 
@@ -377,6 +379,7 @@ async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<
 		message: prompt,
 		cwd: options.workspace || process.cwd(),
 		auto: options.auto || options.mode === "auto",
+		rules: options.rules,
 	}
 
 	// Save config to file if not loaded from file

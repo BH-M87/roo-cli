@@ -9,6 +9,8 @@ import { getRulesSection } from "./sections/rules"
  * @param cwd 当前工作目录
  * @param mode 模式
  * @param customInstructions 自定义指令
+ * @param auto 是否自动执行（不需要用户确认）
+ * @param rules 自定义规则
  * @returns 系统提示
  */
 export function generateSystemPrompt(
@@ -16,6 +18,7 @@ export function generateSystemPrompt(
 	mode: string = "code",
 	customInstructions?: string,
 	auto: boolean = false,
+	rules?: string,
 ): string {
 	// 获取角色定义
 	const roleDefinition = getRoleDefinition(mode)
@@ -35,7 +38,7 @@ ${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd)}
 
-${getRulesSection(cwd)}
+${getRulesSection(cwd, rules)}
 
 ${customInstructions ? `\n${customInstructions}` : ""}`
 

@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added support for setting `auto: true` in task configuration files
   - Updated system prompt to inform AI when it's running in auto mode
   - Auto mode can be combined with continuous execution for fully automated workflows
+- New `rules` parameter that allows users to supplement their own rules
+  - Added `--rules` command line flag to specify custom rules
+  - Added support for setting `rules` in task configuration files
+  - Custom rules are appended to the default rules in the system prompt
+  - Rules can be used to enforce specific coding standards or practices
 
 ### Changed
 

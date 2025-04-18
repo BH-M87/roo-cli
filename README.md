@@ -192,6 +192,18 @@ roo new "Create a simple Node.js HTTP server" --auto --continuous
 roo new "Create a simple Node.js HTTP server" --mode auto
 ```
 
+### Custom Rules
+
+You can provide custom rules to supplement the default rules that guide the AI's behavior. This is useful when you want to enforce specific coding standards or practices.
+
+```bash
+# Add custom rules
+roo new "Create a simple Node.js HTTP server" --rules "11. Always use ES6 syntax. 12. Use async/await instead of promises."
+
+# Combine with other options
+roo new "Create a simple Node.js HTTP server" --rules "11. Follow the AirBnB style guide." --auto --continuous
+```
+
 ### Using Tools
 
 ```bash
@@ -258,7 +270,8 @@ The CLI uses several configuration files:
 	"mode": "code",
 	"message": "Write a function to calculate the Fibonacci sequence",
 	"cwd": "/path/to/working/directory",
-	"auto": false
+	"auto": false,
+	"rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises."
 }
 ```
 
