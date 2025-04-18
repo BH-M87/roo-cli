@@ -177,6 +177,21 @@ roo new "Create a simple Node.js HTTP server" --continuous --max-steps 5
 roo new "Create a simple Node.js HTTP server" --continuous --verbose
 ```
 
+### Auto Mode
+
+Auto mode allows the AI to automatically execute tasks without asking for user confirmation. This is useful for automated workflows or when you want to let the AI complete a task without interruption.
+
+```bash
+# Enable auto mode
+roo new "Create a simple Node.js HTTP server" --auto
+
+# Use auto mode with continuous execution
+roo new "Create a simple Node.js HTTP server" --auto --continuous
+
+# Set the mode to auto
+roo new "Create a simple Node.js HTTP server" --mode auto
+```
+
 ### Using Tools
 
 ```bash
@@ -240,9 +255,10 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "mode": "code",
-  "message": "Write a function to calculate the Fibonacci sequence",
-  "cwd": "/path/to/working/directory"
+	"mode": "code",
+	"message": "Write a function to calculate the Fibonacci sequence",
+	"cwd": "/path/to/working/directory",
+	"auto": false
 }
 ```
 
@@ -250,22 +266,22 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "currentApiConfigName": "anthropic",
-  "apiConfigs": {
-    "anthropic": {
-      "apiProvider": "anthropic",
-      "anthropicApiKey": "your-api-key",
-      "anthropicModelId": "claude-3-5-sonnet-20241022",
-      "id": "anthropic"
-    },
-    "openai": {
-      "apiProvider": "openai",
-      "openAiApiKey": "your-api-key",
-      "openAiBaseUrl": "https://api.openai.com/v1",
-      "openAiModelId": "gpt-4",
-      "id": "openai"
-    }
-  }
+	"currentApiConfigName": "anthropic",
+	"apiConfigs": {
+		"anthropic": {
+			"apiProvider": "anthropic",
+			"anthropicApiKey": "your-api-key",
+			"anthropicModelId": "claude-3-5-sonnet-20241022",
+			"id": "anthropic"
+		},
+		"openai": {
+			"apiProvider": "openai",
+			"openAiApiKey": "your-api-key",
+			"openAiBaseUrl": "https://api.openai.com/v1",
+			"openAiModelId": "gpt-4",
+			"id": "openai"
+		}
+	}
 }
 ```
 
@@ -273,21 +289,21 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "autoApprovalEnabled": true,
-  "alwaysAllowReadOnly": true,
-  "alwaysAllowWrite": true,
-  "alwaysAllowExecute": true,
-  "allowedCommands": ["npm test", "npm install", "git log"],
-  "customModes": [
-    {
-      "slug": "test",
-      "name": "Test",
-      "roleDefinition": "You are a testing specialist...",
-      "customInstructions": "When writing tests...",
-      "groups": ["read", "browser", "command"],
-      "source": "project"
-    }
-  ]
+	"autoApprovalEnabled": true,
+	"alwaysAllowReadOnly": true,
+	"alwaysAllowWrite": true,
+	"alwaysAllowExecute": true,
+	"allowedCommands": ["npm test", "npm install", "git log"],
+	"customModes": [
+		{
+			"slug": "test",
+			"name": "Test",
+			"roleDefinition": "You are a testing specialist...",
+			"customInstructions": "When writing tests...",
+			"groups": ["read", "browser", "command"],
+			"source": "project"
+		}
+	]
 }
 ```
 
@@ -295,13 +311,13 @@ The CLI uses several configuration files:
 
 ```json
 [
-  {
-    "slug": "translate",
-    "name": "Translate",
-    "roleDefinition": "You are a linguistic specialist...",
-    "groups": ["read", "command"],
-    "source": "project"
-  }
+	{
+		"slug": "translate",
+		"name": "Translate",
+		"roleDefinition": "You are a linguistic specialist...",
+		"groups": ["read", "command"],
+		"source": "project"
+	}
 ]
 ```
 

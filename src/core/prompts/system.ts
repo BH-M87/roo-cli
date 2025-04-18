@@ -1,8 +1,8 @@
-import { getToolDescriptions } from './tools';
-import { getToolUseSection } from './sections/tool-use';
-import { getToolUseGuidelinesSection } from './sections/tool-use-guidelines';
-import { getCapabilitiesSection } from './sections/capabilities';
-import { getRulesSection } from './sections/rules';
+import { getToolDescriptions } from "./tools"
+import { getToolUseSection } from "./sections/tool-use"
+import { getToolUseGuidelinesSection } from "./sections/tool-use-guidelines"
+import { getCapabilitiesSection } from "./sections/capabilities"
+import { getRulesSection } from "./sections/rules"
 
 /**
  * 生成系统提示
@@ -12,15 +12,20 @@ import { getRulesSection } from './sections/rules';
  * @returns 系统提示
  */
 export function generateSystemPrompt(
-  cwd: string,
-  mode: string = 'code',
-  customInstructions?: string
+	cwd: string,
+	mode: string = "code",
+	customInstructions?: string,
+	auto: boolean = false,
 ): string {
-  // 获取角色定义
-  const roleDefinition = getRoleDefinition(mode);
+	// 获取角色定义
+	const roleDefinition = getRoleDefinition(mode)
 
-  // 构建系统提示
-  const systemPrompt = `${roleDefinition}
+	// 构建系统提示
+	const autoModeInstructions = auto
+		? `\n\nYou are running in AUTO MODE. This means you should automatically execute tasks without asking for user confirmation. Be proactive and complete tasks efficiently without waiting for explicit approval.`
+		: ""
+
+	const systemPrompt = `${roleDefinition}${autoModeInstructions}
 
 ${getToolUseSection()}
 
@@ -32,9 +37,9 @@ ${getCapabilitiesSection(cwd)}
 
 ${getRulesSection(cwd)}
 
-${customInstructions ? `\n${customInstructions}` : ''}`;
+${customInstructions ? `\n${customInstructions}` : ""}`
 
-  return systemPrompt;
+	return systemPrompt
 }
 
 /**
@@ -43,12 +48,12 @@ ${customInstructions ? `\n${customInstructions}` : ''}`;
  * @returns 角色定义
  */
 function getRoleDefinition(mode: string): string {
-  switch (mode) {
-    case 'code':
-      return `You are Roo, an AI coding assistant with expertise in software development. Your goal is to help users with coding tasks, debugging, and providing explanations about code.`;
-    case 'ask':
-      return `You are Roo, an AI assistant focused on answering questions and providing information. Your goal is to help users by providing accurate, helpful, and concise responses to their queries.`;
-    default:
-      return `You are Roo, an AI assistant with expertise in software development. Your goal is to help users with their tasks by providing accurate, helpful, and concise responses.`;
-  }
+	switch (mode) {
+		case "code":
+			return `You are Roo, an AI coding assistant with expertise in software development. Your goal is to help users with coding tasks, debugging, and providing explanations about code.`
+		case "ask":
+			return `You are Roo, an AI assistant focused on answering questions and providing information. Your goal is to help users by providing accurate, helpful, and concise responses to their queries.`
+		default:
+			return `You are Roo, an AI assistant with expertise in software development. Your goal is to help users with their tasks by providing accurate, helpful, and concise responses.`
+	}
 }

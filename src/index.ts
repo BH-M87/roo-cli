@@ -1,426 +1,355 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
-import dotenv from "dotenv";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import chalk from "chalk";
+import { Command } from "commander"
+import dotenv from "dotenv"
+import path from "path"
+import { v4 as uuidv4 } from "uuid"
+import chalk from "chalk"
 
 import {
-  readTaskConfig,
-  readProviderProfiles,
-  readGlobalSettings,
-  getMergedCustomModes,
-  saveTaskConfig,
-} from "./config/settings";
-import { createServer } from "./server";
-import { Provider } from "./core/provider";
-import { handleNewTask } from "./core/task";
-import { printMessage } from "./utils/terminal";
-import { CommandOptions, TaskConfig, ApiConfig } from "./types";
-import { McpServerManager } from "./mcp/server";
-import { setApiConfig } from "./core/tools/newTaskTool";
-import { getApiConfig } from "./api/config";
+	readTaskConfig,
+	readProviderProfiles,
+	readGlobalSettings,
+	getMergedCustomModes,
+	saveTaskConfig,
+} from "./config/settings"
+import { createServer } from "./server"
+import { Provider } from "./core/provider"
+import { handleNewTask } from "./core/task"
+import { printMessage } from "./utils/terminal"
+import { CommandOptions, TaskConfig, ApiConfig } from "./types"
+import { McpServerManager } from "./mcp/server"
+import { setApiConfig } from "./core/tools/newTaskTool"
+import { getApiConfig } from "./api/config"
 
 // Load environment variables
-dotenv.config();
+dotenv.config()
 
-const program = new Command();
+const program = new Command()
 
-program
-  .name("roo")
-  .description("Roo CLI - Execute AI tasks from the command line")
-  .version("1.0.0");
+program.name("roo").description("Roo CLI - Execute AI tasks from the command line").version("1.0.0")
 
 // New task command
 program
-  .command("new [prompt]")
-  .description("Create a new task")
-  .option(
-    "-w, --workspace <path>",
-    "Workspace directory for file operations (default: current directory)"
-  )
-  .option("-m, --mode <mode>", "Mode to use (e.g., code, ask)")
-  .option("-c, --config-file <path>", "Path to task configuration file")
-  .option("-p, --provider-file <path>", "Path to provider profiles file")
-  .option("-s, --settings-file <path>", "Path to global settings file")
-  .option("-o, --modes-file <path>", "Path to custom modes file")
-  .option("-v, --verbose", "Enable verbose output")
-  .option("--continuous", "Enable continuous execution mode")
-  .option(
-    "--max-steps <steps>",
-    "Maximum number of steps for continuous mode",
-    "100"
-  )
-  .option(
-    "--api-provider <provider>",
-    "API provider to use (anthropic, openai)"
-  )
-  .option("--openai-api-key <key>", "OpenAI API key")
-  .option("--openai-base-url <url>", "OpenAI API base URL")
-  .option("--openai-model <model>", "OpenAI model ID")
-  .option("--anthropic-api-key <key>", "Anthropic API key")
-  .option("--anthropic-model <model>", "Anthropic model ID")
-  .action(async (promptArg, options: CommandOptions) => {
-    try {
-      // Get prompt from argument or interactive input
-      const prompt = promptArg || options.prompt;
+	.command("new [prompt]")
+	.description("Create a new task")
+	.option("-w, --workspace <path>", "Workspace directory for file operations (default: current directory)")
+	.option("-m, --mode <mode>", "Mode to use (e.g., code, ask)")
+	.option("-c, --config-file <path>", "Path to task configuration file")
+	.option("-p, --provider-file <path>", "Path to provider profiles file")
+	.option("-s, --settings-file <path>", "Path to global settings file")
+	.option("-o, --modes-file <path>", "Path to custom modes file")
+	.option("-v, --verbose", "Enable verbose output")
+	.option("--continuous", "Enable continuous execution mode")
+	.option("--max-steps <steps>", "Maximum number of steps for continuous mode", "100")
+	.option("--auto", "Enable auto mode (no user confirmation required)")
+	.option("--api-provider <provider>", "API provider to use (anthropic, openai)")
+	.option("--openai-api-key <key>", "OpenAI API key")
+	.option("--openai-base-url <url>", "OpenAI API base URL")
+	.option("--openai-model <model>", "OpenAI model ID")
+	.option("--anthropic-api-key <key>", "Anthropic API key")
+	.option("--anthropic-model <model>", "Anthropic model ID")
+	.action(async (promptArg, options: CommandOptions) => {
+		try {
+			// Get prompt from argument or interactive input
+			const prompt = promptArg || options.prompt
 
-      if (!prompt) {
-        printMessage("Error: Prompt is required", "error");
-        process.exit(1);
-      }
+			if (!prompt) {
+				printMessage("Error: Prompt is required", "error")
+				process.exit(1)
+			}
 
-      // Load configuration
-      const taskConfig = await loadTaskConfig(prompt, options);
-      const providerProfiles = await readProviderProfiles(options.providerFile);
-      const settings = await readGlobalSettings(options.settingsFile);
-      await getMergedCustomModes(settings, options.modesFile);
+			// Load configuration
+			const taskConfig = await loadTaskConfig(prompt, options)
+			const providerProfiles = await readProviderProfiles(options.providerFile)
+			const settings = await readGlobalSettings(options.settingsFile)
+			await getMergedCustomModes(settings, options.modesFile)
 
-      // Get API configuration from command line options or provider profiles
-      let apiConfig = getApiConfig(options);
+			// Get API configuration from command line options or provider profiles
+			let apiConfig = getApiConfig(options)
 
-      // If no API config from options, use the one from provider profiles
-      if (!apiConfig) {
-        const currentApiConfigName = providerProfiles.currentApiConfigName;
-        apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
+			// If no API config from options, use the one from provider profiles
+			if (!apiConfig) {
+				const currentApiConfigName = providerProfiles.currentApiConfigName
+				apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
 
-        if (!apiConfig) {
-          printMessage(
-            `Error: API configuration '${currentApiConfigName}' not found`,
-            "error"
-          );
-          process.exit(1);
-        }
-      }
+				if (!apiConfig) {
+					printMessage(`Error: API configuration '${currentApiConfigName}' not found`, "error")
+					process.exit(1)
+				}
+			}
 
-      // 设置 API 配置，以便工具可以使用
-      setApiConfig(apiConfig);
+			// 设置 API 配置，以便工具可以使用
+			setApiConfig(apiConfig)
 
-      if (options.verbose) {
-        printMessage(`Using API provider: ${apiConfig.apiProvider}`, "info");
-        printMessage(`Using mode: ${taskConfig.mode}`, "info");
-        printMessage(
-          `Working directory: ${taskConfig.cwd || process.cwd()}`,
-          "info"
-        );
-      }
+			if (options.verbose) {
+				printMessage(`Using API provider: ${apiConfig.apiProvider}`, "info")
+				printMessage(`Using mode: ${taskConfig.mode}`, "info")
+				printMessage(`Working directory: ${taskConfig.cwd || process.cwd()}`, "info")
+			}
 
-      // Execute task
-      printMessage("Executing task...", "info");
-      const result = await handleNewTask({
-        prompt: taskConfig.message,
-        mode: taskConfig.mode,
-        apiConfig,
-        cwd: taskConfig.cwd,
-        continuous: options.continuous,
-        maxSteps: options.maxSteps ? parseInt(options.maxSteps, 10) : undefined,
-        verbose: options.verbose,
-      });
+			// Execute task
+			printMessage("Executing task...", "info")
+			const result = await handleNewTask({
+				prompt: taskConfig.message,
+				mode: taskConfig.mode,
+				apiConfig,
+				cwd: taskConfig.cwd,
+				continuous: options.continuous,
+				maxSteps: options.maxSteps ? parseInt(options.maxSteps, 10) : undefined,
+				verbose: options.verbose,
+				auto: taskConfig.auto,
+			})
 
-      if (result.success) {
-        printMessage("Task completed successfully", "success");
-        console.log("\n" + result.output + "\n");
-      } else {
-        printMessage(`Task failed: ${result.error}`, "error");
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			if (result.success) {
+				printMessage("Task completed successfully", "success")
+				console.log("\n" + result.output + "\n")
+			} else {
+				printMessage(`Task failed: ${result.error}`, "error")
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 // Tool command
 program
-  .command("tool <name>")
-  .description("Execute a tool")
-  .option("-p, --params <json>", "Tool parameters in JSON format")
-  .option("-c, --cwd <path>", "Working directory")
-  .option("-v, --verbose", "Enable verbose output")
-  .option("--provider-file <path>", "Path to provider profiles file")
-  .option("--settings-file <path>", "Path to global settings file")
-  .option("--modes-file <path>", "Path to custom modes file")
-  .action(async (name, options) => {
-    try {
-      // Parse parameters
-      let params = {};
-      if (options.params) {
-        try {
-          params = JSON.parse(options.params);
-        } catch (error) {
-          printMessage(
-            `Error parsing parameters: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-            "error"
-          );
-          process.exit(1);
-        }
-      }
+	.command("tool <name>")
+	.description("Execute a tool")
+	.option("-p, --params <json>", "Tool parameters in JSON format")
+	.option("-c, --cwd <path>", "Working directory")
+	.option("-v, --verbose", "Enable verbose output")
+	.option("--provider-file <path>", "Path to provider profiles file")
+	.option("--settings-file <path>", "Path to global settings file")
+	.option("--modes-file <path>", "Path to custom modes file")
+	.action(async (name, options) => {
+		try {
+			// Parse parameters
+			let params = {}
+			if (options.params) {
+				try {
+					params = JSON.parse(options.params)
+				} catch (error) {
+					printMessage(
+						`Error parsing parameters: ${error instanceof Error ? error.message : String(error)}`,
+						"error",
+					)
+					process.exit(1)
+				}
+			}
 
-      // Load configuration
-      const providerProfiles = await readProviderProfiles(options.providerFile);
-      const settings = await readGlobalSettings(options.settingsFile);
-      const customModes = await getMergedCustomModes(
-        settings,
-        options.modesFile
-      );
+			// Load configuration
+			const providerProfiles = await readProviderProfiles(options.providerFile)
+			const settings = await readGlobalSettings(options.settingsFile)
+			const customModes = await getMergedCustomModes(settings, options.modesFile)
 
-      // Get API configuration from command line options or provider profiles
-      let apiConfig = getApiConfig(options);
+			// Get API configuration from command line options or provider profiles
+			let apiConfig = getApiConfig(options)
 
-      // If no API config from options, use the one from provider profiles
-      if (!apiConfig) {
-        const currentApiConfigName = providerProfiles.currentApiConfigName;
-        apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
+			// If no API config from options, use the one from provider profiles
+			if (!apiConfig) {
+				const currentApiConfigName = providerProfiles.currentApiConfigName
+				apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
 
-        if (!apiConfig) {
-          printMessage(
-            `Error: API configuration '${currentApiConfigName}' not found`,
-            "error"
-          );
-          process.exit(1);
-        }
-      }
+				if (!apiConfig) {
+					printMessage(`Error: API configuration '${currentApiConfigName}' not found`, "error")
+					process.exit(1)
+				}
+			}
 
-      // 设置 API 配置，以便工具可以使用
-      setApiConfig(apiConfig);
+			// 设置 API 配置，以便工具可以使用
+			setApiConfig(apiConfig)
 
-      // Create provider
-      const provider = new Provider(apiConfig, settings, customModes);
+			// Create provider
+			const provider = new Provider(apiConfig, settings, customModes)
 
-      // Create tool use object
-      const toolUse = {
-        name,
-        params,
-      };
+			// Create tool use object
+			const toolUse = {
+				name,
+				params,
+			}
 
-      // Execute tool
-      printMessage(`Executing tool: ${name}`, "info");
-      const result = await provider.executeTool(
-        toolUse,
-        options.cwd,
-        options.verbose
-      );
+			// Execute tool
+			printMessage(`Executing tool: ${name}`, "info")
+			const result = await provider.executeTool(toolUse, options.cwd, options.verbose)
 
-      // Print result
-      console.log("\n" + result + "\n");
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			// Print result
+			console.log("\n" + result + "\n")
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 // List tools command
 program
-  .command("tools")
-  .description("List available tools")
-  .option("-m, --mode <mode>", "Mode to use (e.g., code, ask)", "code")
-  .option("-c, --cwd <path>", "Working directory")
-  .option("-s, --settings-file <path>", "Path to global settings file")
-  .option("-o, --modes-file <path>", "Path to custom modes file")
-  .action(async (options) => {
-    try {
-      // Load configuration
-      const settings = await readGlobalSettings(options.settingsFile);
-      const customModes = await getMergedCustomModes(
-        settings,
-        options.modesFile
-      );
+	.command("tools")
+	.description("List available tools")
+	.option("-m, --mode <mode>", "Mode to use (e.g., code, ask)", "code")
+	.option("-c, --cwd <path>", "Working directory")
+	.option("-s, --settings-file <path>", "Path to global settings file")
+	.option("-o, --modes-file <path>", "Path to custom modes file")
+	.action(async (options) => {
+		try {
+			// Load configuration
+			const settings = await readGlobalSettings(options.settingsFile)
+			const customModes = await getMergedCustomModes(settings, options.modesFile)
 
-      // Create dummy provider (we only need it for tool descriptions)
-      const dummyApiConfig = {
-        apiProvider: "anthropic",
-        anthropicApiKey: "dummy",
-        anthropicModelId: "dummy",
-        id: "dummy",
-      };
+			// Create dummy provider (we only need it for tool descriptions)
+			const dummyApiConfig = {
+				apiProvider: "anthropic",
+				anthropicApiKey: "dummy",
+				anthropicModelId: "dummy",
+				id: "dummy",
+			}
 
-      const provider = new Provider(dummyApiConfig, settings, customModes);
-      provider.setCurrentMode(options.mode);
+			const provider = new Provider(dummyApiConfig, settings, customModes)
+			provider.setCurrentMode(options.mode)
 
-      // Get tool descriptions
-      const toolDescriptions = provider.getAvailableToolDescriptions(
-        options.cwd
-      );
+			// Get tool descriptions
+			const toolDescriptions = provider.getAvailableToolDescriptions(options.cwd)
 
-      // Print tool list
-      printMessage(`Available tools in ${options.mode} mode:`, "info");
-      console.log("");
+			// Print tool list
+			printMessage(`Available tools in ${options.mode} mode:`, "info")
+			console.log("")
 
-      for (const [name, description] of Object.entries(toolDescriptions)) {
-        printMessage(name, "success");
-        console.log(description);
-        console.log("");
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			for (const [name, description] of Object.entries(toolDescriptions)) {
+				printMessage(name, "success")
+				console.log(description)
+				console.log("")
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 // MCP server commands
 program
-  .command("mcp-start")
-  .description("Start the MCP server")
-  .option("-p, --port <port>", "Port to listen on", "3000")
-  .action(async (options) => {
-    try {
-      const port = parseInt(options.port, 10);
-      const serverManager = new McpServerManager(port);
+	.command("mcp-start")
+	.description("Start the MCP server")
+	.option("-p, --port <port>", "Port to listen on", "3000")
+	.action(async (options) => {
+		try {
+			const port = parseInt(options.port, 10)
+			const serverManager = new McpServerManager(port)
 
-      printMessage(`Starting MCP server on port ${port}...`, "info");
-      const success = await serverManager.start();
+			printMessage(`Starting MCP server on port ${port}...`, "info")
+			const success = await serverManager.start()
 
-      if (success) {
-        const status = serverManager.getStatus();
-        printMessage(
-          `MCP server started successfully at ${status.url}`,
-          "success"
-        );
-      } else {
-        printMessage("Failed to start MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			if (success) {
+				const status = serverManager.getStatus()
+				printMessage(`MCP server started successfully at ${status.url}`, "success")
+			} else {
+				printMessage("Failed to start MCP server", "error")
+				process.exit(1)
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 program
-  .command("mcp-stop")
-  .description("Stop the MCP server")
-  .action(async () => {
-    try {
-      const serverManager = new McpServerManager();
+	.command("mcp-stop")
+	.description("Stop the MCP server")
+	.action(async () => {
+		try {
+			const serverManager = new McpServerManager()
 
-      printMessage("Stopping MCP server...", "info");
-      const success = await serverManager.stop();
+			printMessage("Stopping MCP server...", "info")
+			const success = await serverManager.stop()
 
-      if (success) {
-        printMessage("MCP server stopped successfully", "success");
-      } else {
-        printMessage("Failed to stop MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			if (success) {
+				printMessage("MCP server stopped successfully", "success")
+			} else {
+				printMessage("Failed to stop MCP server", "error")
+				process.exit(1)
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 program
-  .command("mcp-restart")
-  .description("Restart the MCP server")
-  .option("-p, --port <port>", "Port to listen on", "3000")
-  .action(async (options) => {
-    try {
-      const port = parseInt(options.port, 10);
-      const serverManager = new McpServerManager(port);
+	.command("mcp-restart")
+	.description("Restart the MCP server")
+	.option("-p, --port <port>", "Port to listen on", "3000")
+	.action(async (options) => {
+		try {
+			const port = parseInt(options.port, 10)
+			const serverManager = new McpServerManager(port)
 
-      printMessage(`Restarting MCP server on port ${port}...`, "info");
-      const success = await serverManager.restart();
+			printMessage(`Restarting MCP server on port ${port}...`, "info")
+			const success = await serverManager.restart()
 
-      if (success) {
-        const status = serverManager.getStatus();
-        printMessage(
-          `MCP server restarted successfully at ${status.url}`,
-          "success"
-        );
-      } else {
-        printMessage("Failed to restart MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			if (success) {
+				const status = serverManager.getStatus()
+				printMessage(`MCP server restarted successfully at ${status.url}`, "success")
+			} else {
+				printMessage("Failed to restart MCP server", "error")
+				process.exit(1)
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 program
-  .command("mcp-status")
-  .description("Check the MCP server status")
-  .action(async () => {
-    try {
-      const serverManager = new McpServerManager();
-      const status = serverManager.getStatus();
+	.command("mcp-status")
+	.description("Check the MCP server status")
+	.action(async () => {
+		try {
+			const serverManager = new McpServerManager()
+			const status = serverManager.getStatus()
 
-      if (status.running) {
-        printMessage(`MCP server is running at ${status.url}`, "success");
-      } else {
-        printMessage("MCP server is not running", "info");
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			if (status.running) {
+				printMessage(`MCP server is running at ${status.url}`, "success")
+			} else {
+				printMessage("MCP server is not running", "info")
+			}
+		} catch (error) {
+			printMessage(`Error: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 // Start server command
 program
-  .command("server")
-  .description("Start the Roo server")
-  .option("-p, --port <port>", "Port to listen on", "3000")
-  .option("-c, --provider-file <path>", "Path to provider profiles file")
-  .option("-s, --settings-file <path>", "Path to global settings file")
-  .option("-m, --modes-file <path>", "Path to custom modes file")
-  .action(async (options) => {
-    try {
-      const port = parseInt(options.port, 10);
+	.command("server")
+	.description("Start the Roo server")
+	.option("-p, --port <port>", "Port to listen on", "3000")
+	.option("-c, --provider-file <path>", "Path to provider profiles file")
+	.option("-s, --settings-file <path>", "Path to global settings file")
+	.option("-m, --modes-file <path>", "Path to custom modes file")
+	.action(async (options) => {
+		try {
+			const port = parseInt(options.port, 10)
 
-      printMessage(`Starting Roo server on port ${port}...`, "info");
+			printMessage(`Starting Roo server on port ${port}...`, "info")
 
-      const server = await createServer(
-        port,
-        options.providerFile,
-        options.settingsFile,
-        options.modesFile
-      );
+			const server = await createServer(port, options.providerFile, options.settingsFile, options.modesFile)
 
-      await server.start();
+			await server.start()
 
-      printMessage(`Server is running at http://localhost:${port}`, "success");
-      printMessage("Press Ctrl+C to stop the server", "info");
+			printMessage(`Server is running at http://localhost:${port}`, "success")
+			printMessage("Press Ctrl+C to stop the server", "info")
 
-      // Handle graceful shutdown
-      process.on("SIGINT", async () => {
-        printMessage("Shutting down server...", "info");
-        await server.stop();
-        printMessage("Server stopped", "success");
-        process.exit(0);
-      });
-    } catch (error) {
-      printMessage(
-        `Error starting server: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
+			// Handle graceful shutdown
+			process.on("SIGINT", async () => {
+				printMessage("Shutting down server...", "info")
+				await server.stop()
+				printMessage("Server stopped", "success")
+				process.exit(0)
+			})
+		} catch (error) {
+			printMessage(`Error starting server: ${error instanceof Error ? error.message : String(error)}`, "error")
+			process.exit(1)
+		}
+	})
 
 /**
  * Load task configuration from file or create from options
@@ -428,41 +357,40 @@ program
  * @param options Command options
  * @returns Task configuration
  */
-async function loadTaskConfig(
-  prompt: string,
-  options: CommandOptions
-): Promise<TaskConfig> {
-  // Try to load from file if specified
-  if (options.configFile) {
-    const config = await readTaskConfig(options.configFile);
-    // Override with command line options if provided
-    return {
-      ...config,
-      message: prompt || config.message,
-      mode: options.mode || config.mode,
-      cwd: options.workspace || config.cwd || process.cwd(),
-    };
-  }
+async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<TaskConfig> {
+	// Try to load from file if specified
+	if (options.configFile) {
+		const config = await readTaskConfig(options.configFile)
+		// Override with command line options if provided
+		return {
+			...config,
+			message: prompt || config.message,
+			mode: options.mode || config.mode,
+			cwd: options.workspace || config.cwd || process.cwd(),
+			auto: options.auto || options.mode === "auto" || config.mode === "auto" || config.auto,
+		}
+	}
 
-  // Create new config
-  const config: TaskConfig = {
-    mode: options.mode || "code",
-    message: prompt,
-    cwd: options.workspace || process.cwd(),
-  };
+	// Create new config
+	const config: TaskConfig = {
+		mode: options.mode || "code",
+		message: prompt,
+		cwd: options.workspace || process.cwd(),
+		auto: options.auto || options.mode === "auto",
+	}
 
-  // Save config to file if not loaded from file
-  if (!options.configFile) {
-    await saveTaskConfig(config);
-  }
+	// Save config to file if not loaded from file
+	if (!options.configFile) {
+		await saveTaskConfig(config)
+	}
 
-  return config;
+	return config
 }
 
 // Parse command line arguments
-program.parse();
+program.parse()
 
 // If no arguments, show help
 if (process.argv.length <= 2) {
-  program.help();
+	program.help()
 }

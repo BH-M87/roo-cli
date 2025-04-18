@@ -18,6 +18,7 @@ export class ContinuousExecutor {
 	private sessionId: string | null = null
 	private maxSteps: number
 	private verbose: boolean
+	private auto: boolean
 
 	/**
 	 * 构造函数
@@ -26,8 +27,16 @@ export class ContinuousExecutor {
 	 * @param cwd 工作目录
 	 * @param maxSteps 最大步骤数
 	 * @param verbose 是否详细输出
+	 * @param auto 是否自动执行（不需要用户确认）
 	 */
-	constructor(apiConfig: ApiConfig, mode: string, cwd: string, maxSteps: number = 1000, verbose: boolean = false) {
+	constructor(
+		apiConfig: ApiConfig,
+		mode: string,
+		cwd: string,
+		maxSteps: number = 1000,
+		verbose: boolean = false,
+		auto: boolean = false,
+	) {
 		this.apiConfig = apiConfig
 		this.mode = mode
 		this.cwd = cwd
@@ -35,6 +44,7 @@ export class ContinuousExecutor {
 		this.toolExecutor = new ToolExecutor(cwd, verbose)
 		this.maxSteps = maxSteps
 		this.verbose = verbose
+		this.auto = auto
 	}
 
 	/**
@@ -50,7 +60,7 @@ export class ContinuousExecutor {
 			const apiHandler = createApiHandler(this.apiConfig)
 
 			// 生成系统提示
-			const systemPrompt = generateSystemPrompt(this.cwd, this.mode)
+			const systemPrompt = generateSystemPrompt(this.cwd, this.mode, undefined, this.auto)
 
 			// 创建会话
 			this.sessionId = this.sessionManager.createSession(this.mode, this.cwd, systemPrompt)
