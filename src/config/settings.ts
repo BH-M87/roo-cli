@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_PROVIDER_PROFILES,
   DEFAULT_GLOBAL_SETTINGS,
+  DEFAULT_TASK_CONFIG,
 } from "./constants";
 
 // Default file names
@@ -38,12 +39,13 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
 /**
  * Read task configuration from file
  * @param filePath Path to the task configuration file
- * @returns Task configuration or null if file doesn't exist
+ * @returns Task configuration (default if file doesn't exist)
  */
 export async function readTaskConfig(
   filePath: string = DEFAULT_TASK_FILE
-): Promise<TaskConfig | null> {
-  return readJsonFile<TaskConfig>(filePath);
+): Promise<TaskConfig> {
+  const config = await readJsonFile<TaskConfig>(filePath);
+  return config || DEFAULT_TASK_CONFIG;
 }
 
 /**

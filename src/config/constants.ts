@@ -1,7 +1,7 @@
 /**
  * 全局常量配置
  */
-import { ProviderProfile, GlobalSettings } from "../types";
+import { ProviderProfile, GlobalSettings, TaskConfig } from "../types";
 
 /**
  * 默认相对目录路径
@@ -72,4 +72,13 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
       source: "default",
     },
   ],
+};
+
+/**
+ * 默认的 Task 配置
+ */
+export const DEFAULT_TASK_CONFIG: TaskConfig = {
+  mode: "code",
+  message: "Welcome to Roo CLI! Please enter a prompt to get started.",
+  cwd: process.cwd(),
 };

@@ -435,15 +435,13 @@ async function loadTaskConfig(
   // Try to load from file if specified
   if (options.configFile) {
     const config = await readTaskConfig(options.configFile);
-    if (config) {
-      // Override with command line options if provided
-      return {
-        ...config,
-        message: prompt || config.message,
-        mode: options.mode || config.mode,
-        cwd: options.workspace || config.cwd || process.cwd(),
-      };
-    }
+    // Override with command line options if provided
+    return {
+      ...config,
+      message: prompt || config.message,
+      mode: options.mode || config.mode,
+      cwd: options.workspace || config.cwd || process.cwd(),
+    };
   }
 
   // Create new config
