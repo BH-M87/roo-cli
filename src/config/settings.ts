@@ -95,8 +95,10 @@ export async function getMergedCustomModes(
 ) {
   const modes = await readCustomModes(modesFile);
 
-  const settingsModes = settings?.customModes || [];
-  const filesModes = modes || [];
+  const settingsModes = Array.isArray(settings?.customModes)
+    ? settings.customModes
+    : [];
+  const filesModes = Array.isArray(modes) ? modes : [];
 
   // Create a map of modes by slug for easy lookup and overriding
   const modesMap = new Map<string, CustomMode>();
