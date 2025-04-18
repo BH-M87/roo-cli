@@ -1,4 +1,4 @@
-import { ToolArgs } from './types';
+import { ToolArgs } from "./types"
 
 /**
  * 获取 search_files 工具的描述
@@ -6,29 +6,24 @@ import { ToolArgs } from './types';
  * @returns 工具描述
  */
 export function getSearchFilesDescription(args: ToolArgs): string {
-  return `## search_files
-Description: Search for files containing a specific pattern.
+	return `## search_files
+Description: Request to perform a regex search across files in a specified directory, providing context-rich results. This tool searches for patterns or specific content across multiple files, displaying each match with encapsulating context.
 Parameters:
-- path: (required) The path to the directory to search in. This can be a relative path from the current working directory (${args.cwd}) or an absolute path.
-- regex: (required) The regular expression pattern to search for.
-- file_pattern: (optional) A glob pattern to filter files to search in (e.g., "*.js").
+- path: (required) The path of the directory to search in (relative to the current workspace directory ${args.cwd}). This directory will be recursively searched.
+- regex: (required) The regular expression pattern to search for. Uses Rust regex syntax.
+- file_pattern: (optional) Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*).
 Usage:
 <search_files>
-<path>path/to/directory</path>
-<regex>pattern to search for</regex>
-<file_pattern>*.js</file_pattern>
+<path>Directory path here</path>
+<regex>Your regex pattern here</regex>
+<file_pattern>file pattern here (optional)</file_pattern>
 </search_files>
 
-Example: Searching for a pattern in all files
+Example: Requesting to search for all .ts files in the current directory
 <search_files>
-<path>src</path>
-<regex>function\\s+main</regex>
+<path>.</path>
+<regex>.*</regex>
+<file_pattern>*.ts</file_pattern>
 </search_files>
-
-Example: Searching for a pattern in specific files
-<search_files>
-<path>src</path>
-<regex>import\\s+React</regex>
-<file_pattern>*.jsx</file_pattern>
-</search_files>`;
+`
 }
