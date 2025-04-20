@@ -20,6 +20,8 @@ export class ContinuousExecutor {
 	private verbose: boolean
 	private auto: boolean
 	private rules?: string
+	private customInstructions?: string
+	private roleDefinition?: string
 
 	/**
 	 * 构造函数
@@ -29,6 +31,9 @@ export class ContinuousExecutor {
 	 * @param maxSteps 最大步骤数
 	 * @param verbose 是否详细输出
 	 * @param auto 是否自动执行（不需要用户确认）
+	 * @param rules 自定义规则
+	 * @param customInstructions 自定义指令
+	 * @param roleDefinition 自定义角色定义，用于覆盖默认角色定义
 	 */
 	constructor(
 		apiConfig: ApiConfig,
@@ -38,6 +43,8 @@ export class ContinuousExecutor {
 		verbose: boolean = false,
 		auto: boolean = false,
 		rules?: string,
+		customInstructions?: string,
+		roleDefinition?: string,
 	) {
 		this.apiConfig = apiConfig
 		this.mode = mode
@@ -48,6 +55,8 @@ export class ContinuousExecutor {
 		this.verbose = verbose
 		this.auto = auto
 		this.rules = rules
+		this.customInstructions = customInstructions
+		this.roleDefinition = roleDefinition
 	}
 
 	/**
@@ -63,7 +72,14 @@ export class ContinuousExecutor {
 			const apiHandler = createApiHandler(this.apiConfig)
 
 			// 生成系统提示
-			const systemPrompt = generateSystemPrompt(this.cwd, this.mode, undefined, this.auto, this.rules)
+			const systemPrompt = generateSystemPrompt(
+				this.cwd,
+				this.mode,
+				this.rules,
+				this.auto,
+				this.customInstructions,
+				this.roleDefinition,
+			)
 
 			// 创建会话
 			this.sessionId = this.sessionManager.createSession(this.mode, this.cwd, systemPrompt)

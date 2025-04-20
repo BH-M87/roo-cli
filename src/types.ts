@@ -6,6 +6,8 @@ export interface TaskConfig {
 	cwd?: string
 	auto?: boolean
 	rules?: string
+	customInstructions?: string
+	roleDefinition?: string
 }
 
 export interface ProviderProfile {
@@ -106,4 +108,6 @@ export interface CommandOptions {
 	anthropicModel?: string
 	auto?: boolean
 	rules?: string
+	customInstructions?: string
+	roleDefinition?: string
 }

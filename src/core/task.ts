@@ -26,6 +26,8 @@ export async function handleNewTask(params: {
 	verbose?: boolean
 	auto?: boolean
 	rules?: string
+	customInstructions?: string
+	roleDefinition?: string
 }): Promise<TaskResult> {
 	const {
 		prompt,
@@ -37,6 +39,8 @@ export async function handleNewTask(params: {
 		verbose = false,
 		auto = false,
 		rules,
+		customInstructions,
+		roleDefinition,
 	} = params
 	const taskId = uuidv4()
 	const workingDir = getCurrentWorkingDirectory(cwd)
@@ -46,13 +50,29 @@ export async function handleNewTask(params: {
 	console.log(`Prompt: ${prompt}`)
 	console.log(`Continuous mode: ${continuous ? "enabled" : "disabled"}`)
 	console.log(`Auto mode: ${auto ? "enabled" : "disabled"}`)
-	console.log(`Rules: ${rules}`)
+	console.log(`Rules: ${rules || "none"}`)
+	console.log(
+		`Custom instructions: ${customInstructions ? (customInstructions.length > 50 ? customInstructions.substring(0, 50) + "..." : customInstructions) : "none"}`,
+	)
+	console.log(
+		`Role definition: ${roleDefinition ? (roleDefinition.length > 50 ? roleDefinition.substring(0, 50) + "..." : roleDefinition) : "default"}`,
+	)
 
 	try {
 		// 检查是否使用连续执行模式或自动模式
 		if (continuous || auto) {
 			// 创建连续执行器
-			const executor = new ContinuousExecutor(apiConfig, mode, workingDir, maxSteps, verbose, auto)
+			const executor = new ContinuousExecutor(
+				apiConfig,
+				mode,
+				workingDir,
+				maxSteps,
+				verbose,
+				auto,
+				rules,
+				customInstructions,
+				roleDefinition,
+			)
 
 			// 执行任务
 			return await executor.execute(prompt)
@@ -62,7 +82,7 @@ export async function handleNewTask(params: {
 			const apiHandler = createApiHandler(apiConfig)
 
 			// 生成系统提示
-			const systemPrompt = generateSystemPrompt(workingDir, mode, undefined, auto, rules)
+			const systemPrompt = generateSystemPrompt(workingDir, mode, rules, auto, customInstructions, roleDefinition)
 
 			// 创建工具执行器
 			const toolExecutor = new ToolExecutor(workingDir, verbose)
@@ -137,5 +157,7 @@ export async function executeTask(
 		verbose: options?.verbose,
 		auto: options?.auto || config.auto,
 		rules: config.rules,
+		customInstructions: config.customInstructions,
+		roleDefinition: config.roleDefinition,
 	})
 }

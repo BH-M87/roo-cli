@@ -204,6 +204,29 @@ roo new "Create a simple Node.js HTTP server" --rules "11. Always use ES6 syntax
 roo new "Create a simple Node.js HTTP server" --rules "11. Follow the AirBnB style guide." --auto --continuous
 ```
 
+### Custom Role Definition
+
+You can provide a custom role definition to override the default one. This is useful when you want to change the AI's personality or expertise.
+
+```bash
+# Add custom role definition
+roo new "Create a simple Node.js HTTP server" --role-definition "You are an expert Node.js developer with 10 years of experience."
+
+# Combine with other options
+roo new "Create a simple Node.js HTTP server" --role-definition "You are a security-focused developer." --auto --continuous
+```
+
+### Mode-Specific Settings
+
+The CLI automatically uses the current mode's `customInstructions` and `roleDefinition` as default values if they are defined in your custom modes configuration. This allows you to define mode-specific behaviors without having to specify them each time.
+
+Priority order for these settings is:
+
+1. Command line arguments (highest priority)
+2. Task configuration file (.rooTask)
+3. Current mode's settings from custom modes
+4. Default values (lowest priority)
+
 ### Using Tools
 
 ```bash
@@ -271,7 +294,8 @@ The CLI uses several configuration files:
 	"message": "Write a function to calculate the Fibonacci sequence",
 	"cwd": "/path/to/working/directory",
 	"auto": false,
-	"rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises."
+	"rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises.",
+	"roleDefinition": "You are an expert JavaScript developer with deep knowledge of algorithms."
 }
 ```
 

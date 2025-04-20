@@ -34,7 +34,7 @@ program
 	.command("new [prompt]")
 	.description("Create a new task")
 	.option("-w, --workspace <path>", "Workspace directory for file operations (default: current directory)")
-	.option("-m, --mode <mode>", "Mode to use (e.g., code, ask)")
+	.option("-m, --mode <mode>", "Mode to use (e.g., auto, code, ask)")
 	.option("-c, --config-file <path>", "Path to task configuration file")
 	.option("-p, --provider-file <path>", "Path to provider profiles file")
 	.option("-s, --settings-file <path>", "Path to global settings file")
@@ -50,6 +50,8 @@ program
 	.option("--anthropic-api-key <key>", "Anthropic API key")
 	.option("--anthropic-model <model>", "Anthropic model ID")
 	.option("--rules <rules>", "Additional rules to supplement the system prompt")
+	.option("--custom-instructions <instructions>", "Custom instructions to add to the system prompt")
+	.option("--role-definition <definition>", "Custom role definition to override the default one")
 	.action(async (promptArg, options: CommandOptions) => {
 		try {
 			// Get prompt from argument or interactive input
@@ -100,6 +102,9 @@ program
 				maxSteps: options.maxSteps ? parseInt(options.maxSteps, 10) : undefined,
 				verbose: options.verbose,
 				auto: taskConfig.auto,
+				rules: taskConfig.rules,
+				customInstructions: taskConfig.customInstructions,
+				roleDefinition: taskConfig.roleDefinition,
 			})
 
 			if (result.success) {
@@ -359,6 +364,18 @@ program
  * @returns Task configuration
  */
 async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<TaskConfig> {
+	// 获取当前模式
+	const mode = options.mode || "code"
+
+	// 获取自定义模式
+	const settings = await readGlobalSettings(options.settingsFile)
+	const customModes = await getMergedCustomModes(settings, options.modesFile)
+
+	// 获取当前模式的自定义指令和角色定义
+	const currentMode = customModes.find((m) => m.slug === mode)
+	const modeCustomInstructions = currentMode?.customInstructions || ""
+	const modeRoleDefinition = currentMode?.roleDefinition || ""
+
 	// Try to load from file if specified
 	if (options.configFile) {
 		const config = await readTaskConfig(options.configFile)
@@ -368,18 +385,22 @@ async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<
 			message: prompt || config.message,
 			mode: options.mode || config.mode,
 			cwd: options.workspace || config.cwd || process.cwd(),
-			auto: options.auto || options.mode === "auto" || config.mode === "auto" || config.auto,
+			auto: options.auto || (options.auto !== false && config.auto) || (options.mode || config.mode) === "auto",
 			rules: options.rules || config.rules,
+			customInstructions: options.customInstructions || config.customInstructions || modeCustomInstructions,
+			roleDefinition: options.roleDefinition || config.roleDefinition || modeRoleDefinition,
 		}
 	}
 
 	// Create new config
 	const config: TaskConfig = {
-		mode: options.mode || "code",
+		mode: mode,
 		message: prompt,
 		cwd: options.workspace || process.cwd(),
 		auto: options.auto || options.mode === "auto",
 		rules: options.rules,
+		customInstructions: options.customInstructions || modeCustomInstructions,
+		roleDefinition: options.roleDefinition || modeRoleDefinition,
 	}
 
 	// Save config to file if not loaded from file

@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added support for setting `rules` in task configuration files
   - Custom rules are appended to the default rules in the system prompt
   - Rules can be used to enforce specific coding standards or practices
+- New `roleDefinition` parameter that allows users to override the default role definition
+  - Added `--role-definition` command line flag to specify custom role definition
+  - Added support for setting `roleDefinition` in task configuration files
+  - Custom role definition replaces the default role definition in the system prompt
+  - Role definition can be used to change the AI's personality or expertise
+- Improved mode-specific settings handling
+  - The CLI now automatically uses the current mode's `customInstructions` and `roleDefinition` as default values
+  - This allows defining mode-specific behaviors without having to specify them each time
+  - Priority order: command line args > task config > mode settings > defaults
 
 ### Changed
 
