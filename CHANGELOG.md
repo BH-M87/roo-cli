@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The CLI now automatically uses the current mode's `customInstructions` and `roleDefinition` as default values
   - This allows defining mode-specific behaviors without having to specify them each time
   - Priority order: command line args > task config > mode settings > defaults
+- Added new `debug` mode
+  - Specialized mode for analyzing and fixing problems in code
+  - Helps identify issues in static code, resolve compilation errors, and troubleshoot runtime exceptions
+  - Follows a systematic debugging approach
 
 ### Changed
 

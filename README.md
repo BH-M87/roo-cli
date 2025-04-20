@@ -216,6 +216,25 @@ roo new "Create a simple Node.js HTTP server" --role-definition "You are an expe
 roo new "Create a simple Node.js HTTP server" --role-definition "You are a security-focused developer." --auto --continuous
 ```
 
+### Available Modes
+
+The CLI comes with several built-in modes:
+
+- **code**: Default mode for general coding tasks
+- **ask**: Mode for answering questions and providing information
+- **test**: Mode specialized for writing and maintaining test suites
+- **debug**: Mode specialized for analyzing and fixing problems in code, including static code issues, compilation errors, and runtime exceptions
+
+You can switch between modes using the `--mode` option:
+
+```bash
+# Use debug mode for troubleshooting
+roo new "Fix the error in my Express.js server" --mode debug
+
+# Use test mode for writing tests
+roo new "Write unit tests for my authentication module" --mode test
+```
+
 ### Mode-Specific Settings
 
 The CLI automatically uses the current mode's `customInstructions` and `roleDefinition` as default values if they are defined in your custom modes configuration. This allows you to define mode-specific behaviors without having to specify them each time.
