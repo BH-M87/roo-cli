@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved code organization and reduced duplication
   - Enhanced task persistence for better continuity between executions
 
+- Extracted single-step execution mode into a dedicated `SingleStepExecutor` class
+
+  - Consistent architecture with `ContinuousExecutor` for better maintainability
+  - Clear separation of concerns between different execution modes
+  - Simplified task handling in both execution modes
+
 - Made `regex` parameter optional in `searchFilesTool`
   - Tool now supports filtering files based on `filePattern` only
   - Updated tool description to clarify that regex is optional

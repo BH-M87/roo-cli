@@ -1,10 +1,8 @@
-import { v4 as uuidv4 } from "uuid";
 import { TaskConfig, TaskResult, ApiConfig, ToolCall } from "../types";
-import { createApiHandler } from "../api";
 import { getCurrentWorkingDirectory } from "../config/settings";
 import { generateSystemPrompt } from "./prompts/system";
-import { ToolExecutor } from "./tool-executor";
 import { ContinuousExecutor } from "./continuous-executor";
+import { SingleStepExecutor } from "./single-step-executor";
 import { TaskManager } from "./task-manager";
 
 /**
@@ -151,57 +149,18 @@ export async function handleNewTask(params: {
       return await executor.execute(prompt);
     } else {
       // 单步执行模式
-      // Create API handler
-      const apiHandler = createApiHandler(apiConfig);
+      // 创建单步执行器
+      const executor = new SingleStepExecutor(
+        apiConfig,
+        mode,
+        workingDir,
+        verbose,
+        systemPrompt,
+        taskId
+      );
 
-      // 创建工具执行器
-      const toolExecutor = new ToolExecutor(workingDir, verbose);
-
-      // 添加用户消息
-      taskManager.addUserMessage(taskId, prompt);
-
-      // 发送请求到 API
-      console.log(`Sending request to ${apiConfig.apiProvider} API...`);
-      const messages = taskManager.getMessages(taskId);
-      const response = await apiHandler.sendRequest("", systemPrompt, messages);
-
-      // 检查是否有工具调用
-      if (response.toolCalls && response.toolCalls.length > 0) {
-        console.log(`Found ${response.toolCalls.length} tool call(s)`);
-
-        // 执行工具调用
-        const toolCall = response.toolCalls[0]; // 只处理第一个工具调用
-        console.log(`Executing tool: ${toolCall.name}`);
-
-        const toolResult = await toolExecutor.execute(toolCall);
-        console.log(`Tool execution completed`);
-
-        // 添加助手消息
-        taskManager.addAssistantMessage(taskId, response.text);
-
-        // 添加工具消息
-        taskManager.addToolMessage(taskId, toolResult);
-
-        // 构建带工具结果的输出
-        const output = `${response.text}\n\nTool Result:\n${toolResult}`;
-
-        return {
-          taskId,
-          output,
-          success: true,
-        };
-      } else {
-        // 没有工具调用，直接返回文本
-
-        // 添加助手消息
-        taskManager.addAssistantMessage(taskId, response.text);
-
-        return {
-          taskId,
-          output: response.text,
-          success: true,
-        };
-      }
+      // 执行任务
+      return await executor.execute(prompt);
     }
   } catch (error) {
     console.error("Error executing task:", error);
