@@ -11,8 +11,9 @@ import {
   readProviderProfiles,
   readGlobalSettings,
   getMergedCustomModes,
-  saveTaskConfig,
+  resolveFilePath,
 } from "./config/settings";
+import { DEFAULT_TASK_CONFIG } from "./config/constants";
 import { createServer } from "./server";
 import { Provider } from "./core/provider";
 import { handleNewTask } from "./core/task";
@@ -466,46 +467,45 @@ async function loadTaskConfig(
   const modeCustomInstructions = currentMode?.customInstructions || "";
   const modeRoleDefinition = currentMode?.roleDefinition || "";
 
+  let fileConfig: TaskConfig;
+
   // Try to load from file if specified
   if (options.configFile) {
-    const config = await readTaskConfig(options.configFile);
-    // Override with command line options if provided
-    return {
-      ...config,
-      message: prompt || config.message,
-      mode: options.mode || config.mode,
-      cwd: options.workspace || config.cwd || process.cwd(),
-      auto:
-        options.auto ||
-        (options.auto !== false && config.auto) ||
-        (options.mode || config.mode) === "auto",
-      rules: options.rules || config.rules,
-      customInstructions:
-        options.customInstructions ||
-        config.customInstructions ||
-        modeCustomInstructions,
-      roleDefinition:
-        options.roleDefinition || config.roleDefinition || modeRoleDefinition,
-    };
+    // 使用 resolveFilePath 确保路径是绝对的
+    const resolvedConfigPath = resolveFilePath(options.configFile);
+    printMessage(`Loading task config from ${resolvedConfigPath}`, "info");
+
+    fileConfig = await readTaskConfig(resolvedConfigPath);
+
+    // 检查是否使用了默认配置（文件不存在）
+    const isDefaultConfig = fileConfig === DEFAULT_TASK_CONFIG;
+    if (isDefaultConfig) {
+      printMessage(`Config file not found, using default config`, "warning");
+    }
+  } else {
+    fileConfig = DEFAULT_TASK_CONFIG;
   }
-
-  // Create new config
-  const config: TaskConfig = {
-    mode: mode,
-    message: prompt,
-    cwd: options.workspace || process.cwd(),
-    auto: options.auto || options.mode === "auto",
-    rules: options.rules,
-    customInstructions: options.customInstructions || modeCustomInstructions,
-    roleDefinition: options.roleDefinition || modeRoleDefinition,
-  };
-
-  // Save config to file if not loaded from file
-  if (!options.configFile) {
-    await saveTaskConfig(config);
-  }
-
-  return config;
+  // Override with command line options if provided
+  return {
+    ...fileConfig,
+    message: prompt || fileConfig.message,
+    mode: options.mode || fileConfig.mode,
+    cwd: options.workspace || fileConfig.cwd || process.cwd(),
+    // 简化 auto 属性的处理逻辑
+    auto:
+      options.auto !== undefined
+        ? options.auto
+        : options.mode === "auto"
+        ? true
+        : fileConfig.auto,
+    rules: options.rules || fileConfig.rules,
+    customInstructions:
+      options.customInstructions ||
+      fileConfig.customInstructions ||
+      modeCustomInstructions,
+    roleDefinition:
+      options.roleDefinition || fileConfig.roleDefinition || modeRoleDefinition,
+  } as TaskConfig;
 }
 
 // Parse command line arguments

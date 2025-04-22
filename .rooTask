@@ -1,5 +1,8 @@
 {
-	"mode": "auto",
-	"message": "需求定义在此",
-	"cwd": "/Users/liuxuheng/OwnDevWorkspaces/Roo-Code-MCP/roo-cli"
+  "mode": "auto",
+  "message": "",
+  "cwd": "/Users/liuxuheng/OwnDevWorkspaces/roo-cli",
+  "auto": true,
+  "customInstructions": "",
+  "roleDefinition": ""
 }
