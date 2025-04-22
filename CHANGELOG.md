@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for continuing from previous tasks
+
+  - New `--continue-from-task` command line parameter to continue execution from a previous task
+  - Task ID is included in the output of each task execution for easy reference
+  - Tasks are persisted between executions, allowing for multi-step workflows
+  - Works with both single-step and continuous execution modes
+
 - New `auto` mode that allows AI to automatically execute tasks without asking for user confirmation
   - Added `--auto` command line flag to enable auto mode
   - Added support for setting `auto: true` in task configuration files
@@ -34,6 +41,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Follows a systematic debugging approach
 
 ### Changed
+
+- Renamed `SessionManager` to `TaskManager` for better alignment with task-centric terminology
+
+  - Moved from `session.ts` to `task-manager.ts`
+  - Renamed related interfaces and methods for consistency
+  - Simplified code by using taskId as the primary identifier
+
+- Centralized task creation and management in `task.ts`
+
+  - Both single-step and continuous execution modes now use the same task creation logic
+  - Improved code organization and reduced duplication
+  - Enhanced task persistence for better continuity between executions
 
 - Made `regex` parameter optional in `searchFilesTool`
   - Tool now supports filtering files based on `filePattern` only
