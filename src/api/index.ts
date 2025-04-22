@@ -185,7 +185,6 @@ export class OpenAiHandler extends ApiHandler {
       const modelId = this.getModel().id;
       const maxTokens = this.config.openAiCustomModelInfo?.maxTokens || 4000;
 
-      console.log(`Sending request to OpenAI API (${this.baseUrl})`);
       console.log(`Using model: ${modelId}`);
 
       // 准备消息

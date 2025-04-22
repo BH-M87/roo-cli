@@ -139,9 +139,9 @@ program
       });
 
       if (result.success) {
+        console.log("\n" + result.output + "\n");
         printMessage("Task completed successfully", "success");
         printMessage(`Task ID: ${result.taskId}`, "info");
-        console.log("\n" + result.output + "\n");
       } else {
         printMessage(`Task failed: ${result.error}`, "error");
         printMessage(`Task ID: ${result.taskId}`, "info");
