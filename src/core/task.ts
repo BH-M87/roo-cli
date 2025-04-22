@@ -160,7 +160,7 @@ export async function handleNewTask(params: {
       );
 
       // 执行任务
-      return await executor.execute(prompt);
+      return (await executor.execute(prompt, false)) as TaskResult;
     }
   } catch (error) {
     console.error("Error executing task:", error);

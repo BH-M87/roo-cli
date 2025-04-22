@@ -49,7 +49,16 @@ export class SingleStepExecutor {
    * @param prompt 提示
    * @returns 任务结果
    */
-  async execute(prompt: string): Promise<TaskResult> {
+  /**
+   * 执行单步任务
+   * @param prompt 提示
+   * @param returnIntermediateResult 是否返回中间结果（用于连续执行模式）
+   * @returns 任务结果
+   */
+  async execute(
+    prompt: string,
+    returnIntermediateResult: boolean = false
+  ): Promise<TaskResult | { response: any; toolResult?: string }> {
     try {
       // 验证任务是否存在
       if (!this.taskId) {
@@ -95,6 +104,14 @@ export class SingleStepExecutor {
         // 添加工具消息
         this.taskManager.addToolMessage(this.taskId, toolResult);
 
+        // 如果需要返回中间结果（用于连续执行模式）
+        if (returnIntermediateResult) {
+          return {
+            response,
+            toolResult,
+          };
+        }
+
         // 构建带工具结果的输出
         const output = `${response.text}\n\nTool Result:\n${toolResult}`;
 
@@ -104,6 +121,13 @@ export class SingleStepExecutor {
           success: true,
         };
       } else {
+        // 如果需要返回中间结果（用于连续执行模式）
+        if (returnIntermediateResult) {
+          return {
+            response,
+          };
+        }
+
         // 没有工具调用，直接返回文本
         return {
           taskId: this.taskId,
@@ -112,7 +136,14 @@ export class SingleStepExecutor {
         };
       }
     } catch (error) {
+      // 如果需要返回中间结果（用于连续执行模式）
+      if (returnIntermediateResult) {
+        throw error;
+      }
+
       console.error("Error executing task:", error);
+
+      // 返回最终结果
       return {
         taskId: this.taskId!,
         output: "",

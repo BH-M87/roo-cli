@@ -60,6 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear separation of concerns between different execution modes
   - Simplified task handling in both execution modes
 
+- Refactored `ContinuousExecutor` to reuse `SingleStepExecutor` for each execution step
+
+  - Eliminated code duplication between execution modes
+  - Improved consistency in how tasks are executed
+  - Better adherence to the DRY (Don't Repeat Yourself) principle
+
 - Made `regex` parameter optional in `searchFilesTool`
   - Tool now supports filtering files based on `filePattern` only
   - Updated tool description to clarify that regex is optional
