@@ -11,11 +11,6 @@ import { TaskManager } from "./task-manager";
 export type ToolResponse = string | { text: string; images?: string[] };
 
 /**
- * Handle a new task
- * @param params Task parameters
- * @returns Task result
- */
-/**
  * 创建或获取任务
  * @param mode 模式
  * @param workingDir 工作目录
@@ -55,6 +50,11 @@ function createOrGetTask(
   return { taskId, taskManager };
 }
 
+/**
+ * Handle a new task
+ * @param params Task parameters
+ * @returns Task result
+ */
 export async function handleNewTask(params: {
   prompt: string;
   mode: string;
@@ -160,7 +160,7 @@ export async function handleNewTask(params: {
       );
 
       // 执行任务
-      return (await executor.execute(prompt, false)) as TaskResult;
+      return (await executor.execute(prompt, false, true)) as TaskResult;
     }
   } catch (error) {
     console.error("Error executing task:", error);

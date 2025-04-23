@@ -1,6 +1,5 @@
 import { ApiConfig, TaskResult } from "../types";
 import { generateSystemPrompt } from "./prompts/system";
-import { TaskManager } from "./task-manager";
 import { SingleStepExecutor } from "./single-step-executor";
 import chalk from "chalk";
 
@@ -89,9 +88,11 @@ export class ContinuousExecutor {
         console.log(chalk.yellow(`Step ${currentStep}/${this.maxSteps}`));
 
         // 使用单步执行器执行当前步骤
+        // 只在第一步添加用户消息
         const result = (await this.singleStepExecutor.execute(
-          prompt,
-          true
+          currentStep === 1 ? prompt : "", // 只在第一步传入用户提示
+          true,
+          currentStep === 1 // 只在第一步添加用户消息
         )) as { response: any; toolResult?: string };
 
         // 打印助手响应

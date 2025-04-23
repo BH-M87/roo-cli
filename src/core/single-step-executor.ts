@@ -53,11 +53,13 @@ export class SingleStepExecutor {
    * 执行单步任务
    * @param prompt 提示
    * @param returnIntermediateResult 是否返回中间结果（用于连续执行模式）
+   * @param addUserMessage 是否添加用户消息（默认为 true）
    * @returns 任务结果
    */
   async execute(
     prompt: string,
-    returnIntermediateResult: boolean = false
+    returnIntermediateResult: boolean = false,
+    addUserMessage: boolean = true
   ): Promise<TaskResult | { response: any; toolResult?: string }> {
     try {
       // 验证任务是否存在
@@ -75,8 +77,17 @@ export class SingleStepExecutor {
       // 创建API处理程序
       const apiHandler = createApiHandler(this.apiConfig);
 
-      // 添加用户消息
-      this.taskManager.addUserMessage(this.taskId, prompt);
+      // 根据参数决定是否添加用户消息
+      if (addUserMessage && prompt) {
+        console.log(
+          chalk.blue(
+            `Adding user message: ${
+              prompt.length > 50 ? prompt.substring(0, 50) + "..." : prompt
+            }`
+          )
+        );
+        this.taskManager.addUserMessage(this.taskId, prompt);
+      }
 
       // 发送请求到 API
       console.log(`Sending request to ${this.apiConfig.apiProvider} API...`);

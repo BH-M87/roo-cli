@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Eliminated code duplication between execution modes
   - Improved consistency in how tasks are executed
   - Better adherence to the DRY (Don't Repeat Yourself) principle
+  - Optimized to only add user message in the first step of continuous execution
 
 - Made `regex` parameter optional in `searchFilesTool`
   - Tool now supports filtering files based on `filePattern` only
