@@ -284,6 +284,71 @@ roo mcp-restart
 
 # Check the MCP server status
 roo mcp-status
+
+# Start the MCP stdio server for external clients to connect via stdin/stdout
+roo mcp-stdio
+
+# Start the MCP stdio server with specific API configuration
+roo mcp-stdio --api-provider openai --openai-api-key your-api-key
+```
+
+### MCP Stdio Server
+
+The MCP stdio server allows other services to connect to Roo CLI via standard input/output streams using the MCP protocol. This enables integration with other applications that support the MCP protocol.
+
+```bash
+# Start the MCP stdio server
+roo mcp-stdio
+
+# Start with specific provider configuration
+roo mcp-stdio --api-provider anthropic --anthropic-api-key your-api-key
+
+# Use custom configuration files
+roo mcp-stdio --provider-file path/to/provider.json --settings-file path/to/settings.json
+```
+
+Example client code to connect to the MCP stdio server:
+
+```javascript
+const { spawn } = require("child_process");
+const readline = require("readline");
+
+// Spawn the MCP stdio server process
+const serverProcess = spawn("roo", ["mcp-stdio"], {
+  stdio: ["pipe", "pipe", "inherit"],
+});
+
+// Create readline interface
+const rl = readline.createInterface({
+  input: serverProcess.stdout,
+  terminal: false,
+});
+
+// Handle server output line by line
+rl.on("line", (line) => {
+  try {
+    const message = JSON.parse(line);
+    console.log("Received message:", message);
+
+    // If it's the init message, send a task request
+    if (message.type === "init") {
+      sendMessage({
+        type: "task",
+        id: "task-1",
+        prompt: "Write a simple hello world function in JavaScript",
+        mode: "code",
+        cwd: process.cwd(),
+      });
+    }
+  } catch (error) {
+    console.error("Error parsing line:", error.message);
+  }
+});
+
+// Send a message to the server
+function sendMessage(message) {
+  serverProcess.stdin.write(JSON.stringify(message) + "\n");
+}
 ```
 
 ### Starting the Server
@@ -309,12 +374,12 @@ The CLI uses several configuration files:
 
 ```json
 {
-	"mode": "code",
-	"message": "Write a function to calculate the Fibonacci sequence",
-	"cwd": "/path/to/working/directory",
-	"auto": false,
-	"rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises.",
-	"roleDefinition": "You are an expert JavaScript developer with deep knowledge of algorithms."
+  "mode": "code",
+  "message": "Write a function to calculate the Fibonacci sequence",
+  "cwd": "/path/to/working/directory",
+  "auto": false,
+  "rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises.",
+  "roleDefinition": "You are an expert JavaScript developer with deep knowledge of algorithms."
 }
 ```
 
@@ -322,22 +387,22 @@ The CLI uses several configuration files:
 
 ```json
 {
-	"currentApiConfigName": "anthropic",
-	"apiConfigs": {
-		"anthropic": {
-			"apiProvider": "anthropic",
-			"anthropicApiKey": "your-api-key",
-			"anthropicModelId": "claude-3-5-sonnet-20241022",
-			"id": "anthropic"
-		},
-		"openai": {
-			"apiProvider": "openai",
-			"openAiApiKey": "your-api-key",
-			"openAiBaseUrl": "https://api.openai.com/v1",
-			"openAiModelId": "gpt-4",
-			"id": "openai"
-		}
-	}
+  "currentApiConfigName": "anthropic",
+  "apiConfigs": {
+    "anthropic": {
+      "apiProvider": "anthropic",
+      "anthropicApiKey": "your-api-key",
+      "anthropicModelId": "claude-3-5-sonnet-20241022",
+      "id": "anthropic"
+    },
+    "openai": {
+      "apiProvider": "openai",
+      "openAiApiKey": "your-api-key",
+      "openAiBaseUrl": "https://api.openai.com/v1",
+      "openAiModelId": "gpt-4",
+      "id": "openai"
+    }
+  }
 }
 ```
 
@@ -345,21 +410,21 @@ The CLI uses several configuration files:
 
 ```json
 {
-	"autoApprovalEnabled": true,
-	"alwaysAllowReadOnly": true,
-	"alwaysAllowWrite": true,
-	"alwaysAllowExecute": true,
-	"allowedCommands": ["npm test", "npm install", "git log"],
-	"customModes": [
-		{
-			"slug": "test",
-			"name": "Test",
-			"roleDefinition": "You are a testing specialist...",
-			"customInstructions": "When writing tests...",
-			"groups": ["read", "browser", "command"],
-			"source": "project"
-		}
-	]
+  "autoApprovalEnabled": true,
+  "alwaysAllowReadOnly": true,
+  "alwaysAllowWrite": true,
+  "alwaysAllowExecute": true,
+  "allowedCommands": ["npm test", "npm install", "git log"],
+  "customModes": [
+    {
+      "slug": "test",
+      "name": "Test",
+      "roleDefinition": "You are a testing specialist...",
+      "customInstructions": "When writing tests...",
+      "groups": ["read", "browser", "command"],
+      "source": "project"
+    }
+  ]
 }
 ```
 
@@ -367,13 +432,13 @@ The CLI uses several configuration files:
 
 ```json
 [
-	{
-		"slug": "translate",
-		"name": "Translate",
-		"roleDefinition": "You are a linguistic specialist...",
-		"groups": ["read", "command"],
-		"source": "project"
-	}
+  {
+    "slug": "translate",
+    "name": "Translate",
+    "roleDefinition": "You are a linguistic specialist...",
+    "groups": ["read", "command"],
+    "source": "project"
+  }
 ]
 ```
 
@@ -422,7 +487,3 @@ When using Docker, you can pass environment variables directly to docker-compose
 ```bash
 OPENAI_API_KEY=your-api-key WORKSPACE_PATH=/path/to/workspace docker-compose run --rm roo-cli new "Your prompt"
 ```
-
-## License
-
-MIT

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added MCP stdio server implementation
+
+  - New `roo mcp-stdio` command to start the MCP stdio server
+  - Allows other services to connect to Roo CLI via standard input/output streams
+  - Supports all Roo tools and task creation capabilities through MCP protocol
+  - Properly handles all parameter formats for tool calls
+  - Includes comprehensive parameter validation using Zod schemas
+  - Supports all task parameters including auto, continuous, max_steps, rules, etc.
+
 - Added support for continuing from previous tasks
 
   - New `--continue-from-task` command line parameter to continue execution from a previous task
