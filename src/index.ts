@@ -20,6 +20,7 @@ import { handleNewTask } from "./core/task";
 import { printMessage } from "./utils/terminal";
 import { CommandOptions, TaskConfig, ApiConfig } from "./types";
 import { McpServerManager } from "./mcp/server";
+import { McpStdioServer } from "./mcp/stdio-server";
 import { setApiConfig } from "./core/tools/newTaskTool";
 import { getApiConfig } from "./api/config";
 
@@ -396,6 +397,57 @@ program
       printMessage(
         `Error: ${error instanceof Error ? error.message : String(error)}`,
         "error"
+      );
+      process.exit(1);
+    }
+  });
+
+// MCP stdio command
+program
+  .command("mcp-stdio")
+  .description("Start the MCP stdio server for external clients to connect")
+  .option("-c, --provider-file <path>", "Path to provider profiles file")
+  .option("-s, --settings-file <path>", "Path to global settings file")
+  .option("-m, --modes-file <path>", "Path to custom modes file")
+  .option(
+    "--api-provider <provider>",
+    "API provider to use (anthropic, openai)"
+  )
+  .option("--openai-api-key <key>", "OpenAI API key")
+  .option("--openai-base-url <url>", "OpenAI API base URL")
+  .option("--openai-model <model>", "OpenAI model ID")
+  .option("--anthropic-api-key <key>", "Anthropic API key")
+  .option("--anthropic-model <model>", "Anthropic model ID")
+  .action(async (options) => {
+    try {
+      // Redirect console.log to stderr to avoid interfering with MCP protocol
+      console.log = function (...args) {
+        console.error(...args);
+      };
+
+      console.error("Starting MCP stdio server...");
+
+      const server = new McpStdioServer(options);
+      const success = await server.start();
+
+      if (success) {
+        console.error("MCP stdio server started successfully");
+        console.error("Waiting for messages on stdin...");
+
+        // Keep the process running until it's terminated
+        process.on("SIGINT", async () => {
+          console.error("Shutting down MCP stdio server...");
+          await server.stop();
+          console.error("MCP stdio server stopped");
+          process.exit(0);
+        });
+      } else {
+        console.error("Failed to start MCP stdio server");
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
       );
       process.exit(1);
     }

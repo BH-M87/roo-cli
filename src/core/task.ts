@@ -96,7 +96,7 @@ export async function handleNewTask(params: {
   );
 
   // 创建或获取任务
-  const { taskId, taskManager } = createOrGetTask(
+  const { taskId } = createOrGetTask(
     mode,
     workingDir,
     systemPrompt,
