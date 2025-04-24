@@ -124,7 +124,7 @@ export async function handleNewTask(params: {
         ? roleDefinition.length > 50
           ? roleDefinition.substring(0, 50) + "..."
           : roleDefinition
-        : "default"
+        : "none"
     }`
   );
 
