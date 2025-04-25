@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added MCP SSE server implementation
+
+  - New `roo mcp-sse` command to start the MCP SSE server
+  - Allows web applications and HTTP clients to connect to Roo CLI via SSE
+  - Provides `/sse` endpoint for establishing connections
+  - Provides `/messages` endpoint for client-to-server communication
+  - Supports all Roo tools and task creation capabilities through MCP protocol
+  - Includes proper CORS support for cross-origin requests
+
 - Added MCP stdio server implementation
 
   - New `roo mcp-stdio` command to start the MCP stdio server
@@ -51,6 +60,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improved API server implementation
+
+  - Added CORS support for cross-origin requests
+  - Enhanced health check endpoint with more detailed information
+  - Added API information endpoint at root path
+  - Added tools endpoint to list available tools
+  - Improved error handling and logging
+  - Added support for environment variables configuration
+  - Better server startup and shutdown handling
+
+- Removed old MCP server implementation
+
+  - Removed `mcp-start`, `mcp-stop`, `mcp-restart`, and `mcp-status` commands
+  - Replaced with more specialized `mcp-sse` and `mcp-stdio` commands
+  - Updated documentation to reflect these changes
+
 - Renamed `SessionManager` to `TaskManager` for better alignment with task-centric terminology
 
   - Moved from `session.ts` to `task-manager.ts`
@@ -84,6 +109,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Updated README.md and README.zh-CN.md with information about MCP SSE server
+- Added examples of using MCP SSE server with different configurations
+- Updated API server documentation to reflect new endpoints and features
 - Updated README.md with information about auto mode
 - Added examples of using auto mode with different configurations
 - Updated .rooTask file example to include the auto property

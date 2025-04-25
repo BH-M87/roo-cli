@@ -426,9 +426,15 @@ program
         options.modesFile
       );
 
-      await server.start();
+      const status = await server.start();
 
-      printMessage(`Server is running at http://localhost:${port}`, "success");
+      printMessage(`Server is running at ${status.url}`, "success");
+      printMessage(`API documentation available at ${status.url}/`, "info");
+      printMessage(`Health check available at ${status.url}/health`, "info");
+      printMessage(
+        `Tools endpoint available at ${status.url}/api/tools`,
+        "info"
+      );
       printMessage("Press Ctrl+C to stop the server", "info");
 
       // Handle graceful shutdown

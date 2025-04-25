@@ -464,13 +464,17 @@ The CLI uses several configuration files:
 
 When running the server, the following endpoints are available:
 
-- `GET /health`: Health check
+- `GET /`: API information and documentation
+- `GET /health`: Health check with server status
 - `POST /api/task`: Execute a task
 - `GET /api/config`: Get current configuration
 - `POST /api/config/api`: Update API configuration
 - `POST /api/config/settings`: Update global settings
 - `POST /api/config/modes`: Update custom modes
 - `POST /api/config/mode`: Set current mode
+- `GET /api/tools`: Get available tools
+
+The server now supports CORS, allowing cross-origin requests from web applications. It also provides detailed error handling and logging for better debugging.
 
 ### Example: Execute a Task
 
@@ -488,6 +492,7 @@ curl -X POST http://localhost:3000/api/task \
 You can use a `.env` file to configure the CLI:
 
 ```env
+# API Configuration
 ANTHROPIC_API_KEY=your-api-key
 ANTHROPIC_MODEL_ID=claude-3-5-sonnet-20241022
 
@@ -495,9 +500,11 @@ OPENAI_API_KEY=your-api-key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL_ID=gpt-4
 
+# Server Configuration
+PORT=3000                           # Port for API and MCP SSE servers
+
 # For Docker
 WORKSPACE_PATH=/path/to/your/workspace
-PORT=3000
 ```
 
 When using Docker, you can pass environment variables directly to docker-compose:

@@ -464,13 +464,17 @@ CLI 使用多个配置文件：
 
 运行服务器时，以下端点可用：
 
-- `GET /health`: 健康检查
+- `GET /`: API 信息和文档
+- `GET /health`: 带有服务器状态的健康检查
 - `POST /api/task`: 执行任务
 - `GET /api/config`: 获取当前配置
 - `POST /api/config/api`: 更新 API 配置
 - `POST /api/config/settings`: 更新全局设置
 - `POST /api/config/modes`: 更新自定义模式
 - `POST /api/config/mode`: 设置当前模式
+- `GET /api/tools`: 获取可用工具
+
+服务器现在支持 CORS，允许来自 Web 应用程序的跨域请求。它还提供详细的错误处理和日志记录，以便更好地进行调试。
 
 ### 示例：执行任务
 
@@ -488,6 +492,7 @@ curl -X POST http://localhost:3000/api/task \
 你可以使用 `.env` 文件来配置 CLI：
 
 ```env
+# API 配置
 ANTHROPIC_API_KEY=your-api-key
 ANTHROPIC_MODEL_ID=claude-3-5-sonnet-20241022
 
@@ -495,9 +500,11 @@ OPENAI_API_KEY=your-api-key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL_ID=gpt-4
 
+# 服务器配置
+PORT=3000                           # API 和 MCP SSE 服务器的端口
+
 # 用于 Docker
 WORKSPACE_PATH=/path/to/your/workspace
-PORT=3000
 ```
 
 使用 Docker 时，你可以直接将环境变量传递给 docker-compose：
