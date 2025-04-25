@@ -23,6 +23,7 @@ import { McpStdioServer } from "./mcp/stdio-server";
 import { McpSseServer } from "./mcp/sse-server";
 import { setApiConfig } from "./core/tools/newTaskTool";
 import { getApiConfig } from "./api/config";
+import { VERSION } from "./config/version";
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +33,7 @@ const program = new Command();
 program
   .name("roo")
   .description("Roo CLI - Execute AI tasks from the command line")
-  .version("1.0.0");
+  .version(VERSION);
 
 // New task command
 program

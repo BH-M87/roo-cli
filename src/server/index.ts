@@ -8,6 +8,7 @@ import {
 } from "../config/settings";
 import { toolRegistry } from "../core/tools";
 import { printMessage } from "../utils/terminal";
+import { VERSION } from "../config/version";
 
 /**
  * Server class that manages the Express server
@@ -61,7 +62,7 @@ export class Server {
     this.app.get("/", (_req, res) => {
       res.status(200).json({
         name: "Roo CLI API Server",
-        version: "1.0.0",
+        version: VERSION,
         description: "API server for Roo CLI",
         endpoints: [
           { path: "/health", description: "Health check endpoint" },
@@ -83,7 +84,7 @@ export class Server {
     this.app.get("/health", (_req, res) => {
       res.status(200).json({
         status: "ok",
-        version: "1.0.0",
+        version: VERSION,
         name: "Roo CLI API Server",
         timestamp: new Date().toISOString(),
       });

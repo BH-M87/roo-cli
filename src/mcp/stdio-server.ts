@@ -15,6 +15,7 @@ import { CommandOptions } from "../types";
 import { setApiConfig } from "../core/tools/newTaskTool";
 import { handleNewTask } from "../core/task";
 import { createParamSchemaForTool } from "./utils";
+import { VERSION } from "../config/version";
 
 /**
  * MCP Stdio 服务器
@@ -41,7 +42,7 @@ export class McpStdioServer extends EventEmitter {
     // 创建 MCP 服务器
     this.server = new McpServer({
       name: "Roo CLI",
-      version: "1.0.0",
+      version: VERSION,
     });
 
     // 创建 Stdio 传输

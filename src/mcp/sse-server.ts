@@ -20,6 +20,7 @@ import { getApiConfig } from "../api/config";
 import { CommandOptions } from "../types";
 import { setApiConfig } from "../core/tools/newTaskTool";
 import { createParamSchemaForTool } from "./utils";
+import { VERSION } from "../config/version";
 
 /**
  * MCP SSE 服务器
@@ -51,7 +52,7 @@ export class McpSseServer extends EventEmitter {
     // 创建 MCP 服务器
     this.mcpServer = new McpServer({
       name: "Roo CLI",
-      version: "1.0.0",
+      version: VERSION,
       listTools: async () => {
         // 返回所有已注册工具的列表
         const tools = Object.entries(toolRegistry).map(([name, tool]) => {
@@ -294,7 +295,7 @@ export class McpSseServer extends EventEmitter {
         res.json({
           status: "ok",
           connected: this.currentTransport !== null,
-          version: "1.0.0",
+          version: VERSION,
           name: "Roo CLI MCP Server",
         });
       });
@@ -303,7 +304,7 @@ export class McpSseServer extends EventEmitter {
       app.get("/", (_req, res) => {
         res.json({
           name: "Roo CLI MCP Server",
-          version: "1.0.0",
+          version: VERSION,
           description: "MCP server for Roo CLI",
           endpoints: [
             { path: "/sse", description: "SSE endpoint for MCP communication" },
