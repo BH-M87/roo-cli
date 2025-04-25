@@ -270,20 +270,6 @@ roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to
 The MCP (Model Context Protocol) server allows external clients to control Roo CLI using the MCP protocol.
 
 ```bash
-# Start the MCP server
-roo mcp-start
-
-# Start the MCP server on a specific port
-roo mcp-start --port 3001
-
-# Stop the MCP server
-roo mcp-stop
-
-# Restart the MCP server
-roo mcp-restart
-
-# Check the MCP server status
-roo mcp-status
 
 # Start the MCP stdio server for external clients to connect via stdin/stdout
 roo mcp-stdio

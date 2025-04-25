@@ -270,20 +270,6 @@ roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to
 MCP（模型上下文协议）服务器允许外部客户端使用 MCP 协议控制 Roo CLI。
 
 ```bash
-# 启动 MCP 服务器
-roo mcp-start
-
-# 在指定端口启动 MCP 服务器
-roo mcp-start --port 3001
-
-# 停止 MCP 服务器
-roo mcp-stop
-
-# 重启 MCP 服务器
-roo mcp-restart
-
-# 检查 MCP 服务器状态
-roo mcp-status
 
 # 启动 MCP stdio 服务器，供外部客户端通过 stdin/stdout 连接
 roo mcp-stdio

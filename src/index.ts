@@ -18,8 +18,7 @@ import { createServer } from "./server";
 import { Provider } from "./core/provider";
 import { handleNewTask } from "./core/task";
 import { printMessage } from "./utils/terminal";
-import { CommandOptions, TaskConfig, ApiConfig } from "./types";
-import { McpServerManager } from "./mcp/server";
+import { CommandOptions, TaskConfig } from "./types";
 import { McpStdioServer } from "./mcp/stdio-server";
 import { McpSseServer } from "./mcp/sse-server";
 import { setApiConfig } from "./core/tools/newTaskTool";
@@ -283,116 +282,6 @@ program
         printMessage(name, "success");
         console.log(description);
         console.log("");
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
-
-// MCP server commands
-program
-  .command("mcp-start")
-  .description("Start the MCP server")
-  .option("-p, --port <port>", "Port to listen on", "3000")
-  .action(async (options) => {
-    try {
-      const port = parseInt(options.port, 10);
-      const serverManager = new McpServerManager(port);
-
-      printMessage(`Starting MCP server on port ${port}...`, "info");
-      const success = await serverManager.start();
-
-      if (success) {
-        const status = serverManager.getStatus();
-        printMessage(
-          `MCP server started successfully at ${status.url}`,
-          "success"
-        );
-      } else {
-        printMessage("Failed to start MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
-
-program
-  .command("mcp-stop")
-  .description("Stop the MCP server")
-  .action(async () => {
-    try {
-      const serverManager = new McpServerManager();
-
-      printMessage("Stopping MCP server...", "info");
-      const success = await serverManager.stop();
-
-      if (success) {
-        printMessage("MCP server stopped successfully", "success");
-      } else {
-        printMessage("Failed to stop MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
-
-program
-  .command("mcp-restart")
-  .description("Restart the MCP server")
-  .option("-p, --port <port>", "Port to listen on", "3000")
-  .action(async (options) => {
-    try {
-      const port = parseInt(options.port, 10);
-      const serverManager = new McpServerManager(port);
-
-      printMessage(`Restarting MCP server on port ${port}...`, "info");
-      const success = await serverManager.restart();
-
-      if (success) {
-        const status = serverManager.getStatus();
-        printMessage(
-          `MCP server restarted successfully at ${status.url}`,
-          "success"
-        );
-      } else {
-        printMessage("Failed to restart MCP server", "error");
-        process.exit(1);
-      }
-    } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
-      );
-      process.exit(1);
-    }
-  });
-
-program
-  .command("mcp-status")
-  .description("Check the MCP server status")
-  .action(async () => {
-    try {
-      const serverManager = new McpServerManager();
-      const status = serverManager.getStatus();
-
-      if (status.running) {
-        printMessage(`MCP server is running at ${status.url}`, "success");
-      } else {
-        printMessage("MCP server is not running", "info");
       }
     } catch (error) {
       printMessage(
