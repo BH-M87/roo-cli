@@ -21,6 +21,7 @@ import { printMessage } from "./utils/terminal";
 import { CommandOptions, TaskConfig, ApiConfig } from "./types";
 import { McpServerManager } from "./mcp/server";
 import { McpStdioServer } from "./mcp/stdio-server";
+import { McpSseServer } from "./mcp/sse-server";
 import { setApiConfig } from "./core/tools/newTaskTool";
 import { getApiConfig } from "./api/config";
 
@@ -448,6 +449,68 @@ program
     } catch (error) {
       console.error(
         `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
+      process.exit(1);
+    }
+  });
+
+// MCP SSE server command
+program
+  .command("mcp-sse")
+  .description(
+    "Start the MCP SSE server for external clients to connect via SSE"
+  )
+  .option("-p, --port <port>", "Port to listen on", "3000")
+  .option("-c, --provider-file <path>", "Path to provider profiles file")
+  .option("-s, --settings-file <path>", "Path to global settings file")
+  .option("-m, --modes-file <path>", "Path to custom modes file")
+  .option(
+    "--api-provider <provider>",
+    "API provider to use (anthropic, openai)"
+  )
+  .option("--openai-api-key <key>", "OpenAI API key")
+  .option("--openai-base-url <url>", "OpenAI API base URL")
+  .option("--openai-model <model>", "OpenAI model ID")
+  .option("--anthropic-api-key <key>", "Anthropic API key")
+  .option("--anthropic-model <model>", "Anthropic model ID")
+  .action(async (options) => {
+    try {
+      const port = parseInt(options.port, 10);
+
+      printMessage(`Starting MCP SSE server on port ${port}...`, "info");
+
+      const server = new McpSseServer(port, options);
+
+      const success = await server.start();
+
+      if (success) {
+        const status = await server.getStatus();
+        printMessage(
+          `MCP SSE server started successfully at ${status.url}`,
+          "success"
+        );
+        printMessage(`SSE endpoint available at ${status.url}/sse`, "info");
+        printMessage(
+          `Messages endpoint available at ${status.url}/messages`,
+          "info"
+        );
+        printMessage("Press Ctrl+C to stop the server", "info");
+
+        // Keep the process running until it's terminated
+        process.on("SIGINT", async () => {
+          printMessage("Shutting down MCP SSE server...", "info");
+          await server.stop();
+          printMessage("MCP SSE server stopped", "success");
+          process.exit(0);
+        });
+      } else {
+        printMessage("Failed to start MCP SSE server", "error");
+        process.exit(1);
+      }
+    } catch (error) {
+      printMessage(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+        "error"
       );
       process.exit(1);
     }

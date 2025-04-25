@@ -290,6 +290,15 @@ roo mcp-stdio
 
 # Start the MCP stdio server with specific API configuration
 roo mcp-stdio --api-provider openai --openai-api-key your-api-key
+
+# Start the MCP SSE server for external clients to connect via SSE
+roo mcp-sse
+
+# Start the MCP SSE server on a specific port
+roo mcp-sse --port 3001
+
+# Start the MCP SSE server with specific API configuration
+roo mcp-sse --api-provider anthropic --anthropic-api-key your-api-key
 ```
 
 ### MCP Stdio Server
@@ -306,6 +315,29 @@ roo mcp-stdio --api-provider anthropic --anthropic-api-key your-api-key
 # Use custom configuration files
 roo mcp-stdio --provider-file path/to/provider.json --settings-file path/to/settings.json
 ```
+
+### MCP SSE Server
+
+The MCP SSE (Server-Sent Events) server allows other services to connect to Roo CLI via HTTP using the SSE protocol. This enables web applications and other HTTP clients to integrate with Roo CLI using the MCP protocol.
+
+```bash
+# Start the MCP SSE server
+roo mcp-sse
+
+# Start the MCP SSE server on a specific port
+roo mcp-sse --port 3001
+
+# Start with specific provider configuration
+roo mcp-sse --api-provider anthropic --anthropic-api-key your-api-key
+
+# Use custom configuration files
+roo mcp-sse --provider-file path/to/provider.json --settings-file path/to/settings.json
+```
+
+The SSE server provides two main endpoints:
+
+- `/sse` - The SSE endpoint for establishing a connection
+- `/messages` - The endpoint for sending messages to the server
 
 Example client code to connect to the MCP stdio server:
 

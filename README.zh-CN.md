@@ -290,6 +290,15 @@ roo mcp-stdio
 
 # 使用特定 API 配置启动 MCP stdio 服务器
 roo mcp-stdio --api-provider openai --openai-api-key your-api-key
+
+# 启动 MCP SSE 服务器，供外部客户端通过 SSE 连接
+roo mcp-sse
+
+# 在指定端口启动 MCP SSE 服务器
+roo mcp-sse --port 3001
+
+# 使用特定 API 配置启动 MCP SSE 服务器
+roo mcp-sse --api-provider anthropic --anthropic-api-key your-api-key
 ```
 
 ### MCP Stdio 服务器
@@ -306,6 +315,29 @@ roo mcp-stdio --api-provider anthropic --anthropic-api-key your-api-key
 # 使用自定义配置文件
 roo mcp-stdio --provider-file path/to/provider.json --settings-file path/to/settings.json
 ```
+
+### MCP SSE 服务器
+
+MCP SSE（Server-Sent Events）服务器允许其他服务通过 HTTP 使用 SSE 协议连接到 Roo CLI。这使得 Web 应用程序和其他 HTTP 客户端能够使用 MCP 协议与 Roo CLI 集成。
+
+```bash
+# 启动 MCP SSE 服务器
+roo mcp-sse
+
+# 在指定端口启动 MCP SSE 服务器
+roo mcp-sse --port 3001
+
+# 使用特定提供者配置启动
+roo mcp-sse --api-provider anthropic --anthropic-api-key your-api-key
+
+# 使用自定义配置文件
+roo mcp-sse --provider-file path/to/provider.json --settings-file path/to/settings.json
+```
+
+SSE 服务器提供两个主要端点：
+
+- `/sse` - 用于建立连接的 SSE 端点
+- `/messages` - 用于向服务器发送消息的端点
 
 连接 MCP stdio 服务器的示例客户端代码：
 
