@@ -3,6 +3,7 @@ import { createApiHandler } from "../api";
 import { ToolExecutor } from "./tool-executor";
 import { TaskManager } from "./task-manager";
 import chalk from "chalk";
+import { logger } from "../utils/logger";
 
 /**
  * 单步执行器
@@ -14,7 +15,6 @@ export class SingleStepExecutor {
   private taskManager: TaskManager;
   private toolExecutor: ToolExecutor;
   private taskId: string | undefined;
-  private verbose: boolean;
   private systemPrompt: string;
 
   /**
@@ -22,7 +22,7 @@ export class SingleStepExecutor {
    * @param apiConfig API配置
    * @param mode 模式
    * @param cwd 工作目录
-   * @param verbose 是否详细输出
+   * @param logLevel 日志级别
    * @param systemPrompt 系统提示
    * @param taskId 任务ID
    */
@@ -30,7 +30,6 @@ export class SingleStepExecutor {
     apiConfig: ApiConfig,
     mode: string,
     cwd: string,
-    verbose: boolean = false,
     systemPrompt: string,
     taskId: string
   ) {
@@ -38,8 +37,7 @@ export class SingleStepExecutor {
     this.mode = mode;
     this.cwd = cwd;
     this.taskManager = new TaskManager();
-    this.toolExecutor = new ToolExecutor(cwd, verbose);
-    this.verbose = verbose;
+    this.toolExecutor = new ToolExecutor(cwd);
     this.systemPrompt = systemPrompt;
     this.taskId = taskId;
   }
@@ -71,15 +69,16 @@ export class SingleStepExecutor {
       if (!task) {
         throw new Error(`Task ${this.taskId} not found`);
       }
-      console.log(chalk.blue(`Using task: ${this.taskId}`));
-      console.log(chalk.blue(`Task has ${task.messages.length} messages`));
+
+      logger.info(chalk.blue(`Using task: ${this.taskId}`));
+      logger.info(chalk.blue(`Task has ${task.messages.length} messages`));
 
       // 创建API处理程序
       const apiHandler = createApiHandler(this.apiConfig);
 
       // 根据参数决定是否添加用户消息
       if (addUserMessage && prompt) {
-        console.log(
+        logger.info(
           chalk.blue(
             `Adding user message: ${
               prompt.length > 50 ? prompt.substring(0, 50) + "..." : prompt
@@ -90,7 +89,7 @@ export class SingleStepExecutor {
       }
 
       // 发送请求到 API
-      console.log(`Sending request to ${this.apiConfig.apiProvider} API...`);
+      logger.info(`Sending request to ${this.apiConfig.apiProvider} API...`);
       const messages = this.taskManager.getMessages(this.taskId);
       const response = await apiHandler.sendRequest(
         "",
@@ -103,14 +102,14 @@ export class SingleStepExecutor {
 
       // 检查是否有工具调用
       if (response.toolCalls && response.toolCalls.length > 0) {
-        console.log(`Found ${response.toolCalls.length} tool call(s)`);
+        logger.info(`Found ${response.toolCalls.length} tool call(s)`);
 
         // 执行工具调用
         const toolCall = response.toolCalls[0]; // 只处理第一个工具调用
-        console.log(`Executing tool: ${toolCall.name}`);
+        logger.info(`Executing tool: ${toolCall.name}`);
 
         const toolResult = await this.toolExecutor.execute(toolCall);
-        console.log(`Tool execution completed`);
+        logger.info(`Tool execution completed`);
 
         // 添加工具消息
         this.taskManager.addToolMessage(this.taskId, toolResult);
@@ -152,7 +151,10 @@ export class SingleStepExecutor {
         throw error;
       }
 
-      console.error("Error executing task:", error);
+      logger.error(
+        "Error executing task: " +
+          (error instanceof Error ? error.message : String(error))
+      );
 
       // 返回最终结果
       return {

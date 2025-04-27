@@ -1,7 +1,8 @@
-import { ToolHandler } from './types';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as os from 'os';
+import { ToolHandler } from "./types";
+import { logger } from "../../utils/logger";
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as os from "os";
 
 const execAsync = promisify(exec);
 
@@ -10,7 +11,7 @@ const execAsync = promisify(exec);
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const browserActionTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const browserActionTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const action = params.action;
   const url = params.url;
@@ -20,29 +21,33 @@ export const browserActionTool: ToolHandler = async ({ toolUse, cwd, verbose }) 
   }
 
   try {
-    if (verbose) {
-      console.log(`Executing browser action: ${action}`);
-    }
+    logger.debug(`Executing browser action: ${action}`);
 
     switch (action) {
-      case 'open':
+      case "open":
         if (!url) {
           return 'Error: Missing required parameter "url" for action "open"';
         }
-        
+
         // 打开浏览器
         await openBrowser(url);
         return `Successfully opened browser with URL: ${url}`;
-      
-      case 'screenshot':
-        return 'Error: Screenshot action is not supported in CLI mode';
-      
+
+      case "screenshot":
+        return "Error: Screenshot action is not supported in CLI mode";
+
       default:
         return `Error: Unsupported action "${action}"`;
     }
   } catch (error) {
-    console.error(`Error executing browser action ${action}:`, error);
-    return `Error executing browser action ${action}: ${error instanceof Error ? error.message : String(error)}`;
+    logger.error(
+      `Error executing browser action ${action}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    return `Error executing browser action ${action}: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
   }
 };
 
@@ -52,22 +57,26 @@ export const browserActionTool: ToolHandler = async ({ toolUse, cwd, verbose }) 
  */
 async function openBrowser(url: string): Promise<void> {
   const platform = os.platform();
-  
+
   try {
     switch (platform) {
-      case 'darwin':
+      case "darwin":
         await execAsync(`open "${url}"`);
         break;
-      case 'win32':
+      case "win32":
         await execAsync(`start "${url}"`);
         break;
-      case 'linux':
+      case "linux":
         await execAsync(`xdg-open "${url}"`);
         break;
       default:
         throw new Error(`Unsupported platform: ${platform}`);
     }
   } catch (error) {
-    throw new Error(`Failed to open browser: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to open browser: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }

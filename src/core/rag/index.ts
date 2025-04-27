@@ -9,6 +9,7 @@ import fs from "fs-extra";
 import path from "path";
 import glob from "glob";
 import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
+import { logger } from "../../utils/logger";
 
 /**
  * Code chunk interface representing a segment of code with context
@@ -300,7 +301,11 @@ export async function extractCodeChunks(
 
     return chunks;
   } catch (error) {
-    console.error(`Error extracting code chunks from ${filePath}:`, error);
+    logger.error(
+      `Error extracting code chunks from ${filePath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return [];
   }
 }
@@ -1310,7 +1315,11 @@ export async function indexCodeFiles(
 
     return indexedCount;
   } catch (error) {
-    console.error(`Error indexing code files in ${relDirPath}:`, error);
+    logger.error(
+      `Error indexing code files in ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     throw error;
   }
 }
@@ -1343,7 +1352,11 @@ export async function searchCodeByQuery(
     // Find similar code chunks, passing both the embedding and the original query text
     return codeEmbeddingStore.findSimilar(queryEmbedding, query, topK);
   } catch (error) {
-    console.error(`Error searching code by query: ${query}`, error);
+    logger.error(
+      `Error searching code by query: ${query}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return [];
   }
 }

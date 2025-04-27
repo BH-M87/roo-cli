@@ -97,7 +97,7 @@ export interface CommandOptions {
   providerFile?: string;
   settingsFile?: string;
   modesFile?: string;
-  verbose?: boolean;
+  logLevel?: string;
   continuous?: boolean;
   maxSteps?: string;
   apiProvider?: string;

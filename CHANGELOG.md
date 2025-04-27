@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `--log-level` parameter to control output verbosity
+
+  - New `--log-level` command line flag to set the log level
+  - Supports both numeric values (0-4) and named levels (debug, info, success, warn, error)
+  - Provides fine-grained control over output verbosity
+  - Replaces the previous `--verbose` and `--quiet` parameters
+  - Useful for scripting and automation where specific output levels are needed
+  - Added to `roo tool` command for controlling tool execution verbosity
+  - Centralized logging system with consistent level control across all commands
+
 - Added MCP SSE server implementation
 
   - New `roo mcp-sse` command to start the MCP SSE server
@@ -59,6 +69,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Follows a systematic debugging approach
 
 ### Changed
+
+- Improved logging system
+
+  - Centralized logging control through a unified `logger` utility
+  - Replaced direct `console.log` calls with appropriate logger methods
+  - Added `logger.setLevel` method for easy log level control
+  - Removed redundant `verbose` parameter in favor of log level control
+  - Improved debug output for tool execution
+  - Consistent log formatting across all commands and tools
+  - Better control over output verbosity for scripting and automation
 
 - Improved API server implementation
 

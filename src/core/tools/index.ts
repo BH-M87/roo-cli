@@ -3,6 +3,7 @@
  */
 
 import { GlobalSettings } from "../../types";
+import { logger } from "../../utils/logger";
 import {
   ToolHandler,
   ToolRegistry,
@@ -158,13 +159,11 @@ export function isToolAvailable(
  * 执行工具
  * @param toolUse 工具使用
  * @param cwd 当前工作目录
- * @param verbose 是否详细输出
  * @returns 工具执行结果
  */
 export async function executeTool(
   toolUse: ToolUse,
-  cwd: string,
-  verbose: boolean = false
+  cwd: string
 ): Promise<string> {
   const { name } = toolUse;
 
@@ -178,16 +177,12 @@ export async function executeTool(
     const handler = toolRegistry[name].handler;
 
     // 执行工具
-    if (verbose) {
-      console.log(`Executing tool: ${name}`);
-      console.log(`Parameters:`, toolUse.params);
-    }
+    logger.debug(`Executing tool: ${name}`);
+    logger.debug(`Parameters: ${JSON.stringify(toolUse.params)}`);
 
-    const result = await handler({ toolUse, cwd, verbose });
+    const result = await handler({ toolUse, cwd });
 
-    if (verbose) {
-      console.log(`Tool execution completed`);
-    }
+    logger.debug(`Tool execution completed`);
 
     // 返回结果
     if (typeof result === "string") {
@@ -196,7 +191,11 @@ export async function executeTool(
       return result.text;
     }
   } catch (error) {
-    console.error(`Error executing tool ${name}:`, error);
+    logger.error(
+      `Error executing tool ${name}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error executing tool ${name}: ${
       error instanceof Error ? error.message : String(error)
     }`;

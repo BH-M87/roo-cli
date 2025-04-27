@@ -173,8 +173,17 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --continuous
 # 指定最大步骤数
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --max-steps 5
 
-# 启用详细输出
-roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --verbose
+# 设置日志级别 (debug=0, info=1, success=2, warn=3, error=4)
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level debug
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 0
+
+# 设置日志级别为 info（默认）
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level info
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
+
+# 设置日志级别为 error（最少输出）
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level error
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 4
 ```
 
 ### 自动模式
@@ -258,11 +267,17 @@ roo tools --mode code
 # 执行工具
 roo tool read_file --params '{"path": "src/index.js"}'
 
-# 执行工具并显示详细输出
-roo tool execute_command --params '{"command": "ls -la"}' --verbose
+# 执行工具并使用调试日志级别
+roo tool execute_command --params '{"command": "ls -la"}' --log-level debug
 
 # 在特定目录中执行工具
 roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to/directory
+
+# 使用 info 日志级别执行工具（默认）
+roo tool read_file --params '{"path": "src/index.js"}' --log-level info
+
+# 使用 error 日志级别执行工具（最少输出）
+roo tool read_file --params '{"path": "src/index.js"}' --log-level error
 ```
 
 ### MCP 服务器

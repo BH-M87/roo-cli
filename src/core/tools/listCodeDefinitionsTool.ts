@@ -1,4 +1,5 @@
 import fs from "fs-extra";
+import { logger } from "../../utils/logger";
 import path from "path";
 import glob from "glob";
 import { ToolHandler } from "./types";
@@ -12,7 +13,6 @@ import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
 export const listCodeDefinitionsTool: ToolHandler = async ({
   toolUse,
   cwd,
-  verbose,
 }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
@@ -21,9 +21,7 @@ export const listCodeDefinitionsTool: ToolHandler = async ({
     // 解析目录路径
     const fullPath = path.resolve(cwd, relDirPath);
 
-    if (verbose) {
-      console.log(`Listing code definitions in directory: ${fullPath}`);
-    }
+    logger.debug(`Listing code definitions in directory: ${fullPath}`);
 
     // 检查目录是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -149,9 +147,10 @@ export const listCodeDefinitionsTool: ToolHandler = async ({
 
     return result;
   } catch (error) {
-    console.error(
-      `Error listing code definitions in directory ${relDirPath}:`,
-      error
+    logger.error(
+      `Error listing code definitions in directory ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     );
     return `Error listing code definitions in directory ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)

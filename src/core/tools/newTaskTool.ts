@@ -1,4 +1,5 @@
 import { ToolHandler } from "./types";
+import { logger } from "../../utils/logger";
 import { handleNewTask } from "../task";
 import { ApiConfig } from "../../types";
 
@@ -18,7 +19,7 @@ export function setApiConfig(apiConfig: ApiConfig): void {
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const newTaskTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const newTaskTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const prompt = params.prompt;
   const mode = params.mode || "code";
@@ -32,30 +33,25 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
   }
 
   try {
-    if (verbose) {
-      console.log(`Creating new task with prompt: ${prompt}`);
-      console.log(`Mode: ${mode}`);
+    logger.debug(`Creating new task with prompt: ${prompt}`);
+    logger.debug(`Mode: ${mode}`);
 
-      // 打印其他参数
-      if (params.auto) console.log(`Auto mode: ${params.auto}`);
-      if (params.continuous)
-        console.log(`Continuous mode: ${params.continuous}`);
-      if (params.max_steps) console.log(`Max steps: ${params.max_steps}`);
-      if (params.rules) console.log(`Rules: ${params.rules}`);
-      if (params.custom_instructions)
-        console.log(
-          `Custom instructions: ${params.custom_instructions.substring(
-            0,
-            50
-          )}...`
-        );
-      if (params.role_definition)
-        console.log(
-          `Role definition: ${params.role_definition.substring(0, 50)}...`
-        );
-      if (params.continue_from_task)
-        console.log(`Continue from task: ${params.continue_from_task}`);
-    }
+    // 打印其他参数
+    if (params.auto) logger.debug(`Auto mode: ${params.auto}`);
+    if (params.continuous)
+      logger.debug(`Continuous mode: ${params.continuous}`);
+    if (params.max_steps) logger.debug(`Max steps: ${params.max_steps}`);
+    if (params.rules) logger.debug(`Rules: ${params.rules}`);
+    if (params.custom_instructions)
+      logger.debug(
+        `Custom instructions: ${params.custom_instructions.substring(0, 50)}...`
+      );
+    if (params.role_definition)
+      logger.debug(
+        `Role definition: ${params.role_definition.substring(0, 50)}...`
+      );
+    if (params.continue_from_task)
+      logger.debug(`Continue from task: ${params.continue_from_task}`);
 
     // 创建新任务，传递所有参数
     const result = await handleNewTask({
@@ -63,7 +59,7 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
       mode,
       apiConfig: globalApiConfig,
       cwd,
-      verbose,
+      logLevel: "1", // 默认为 INFO 级别
       // 添加其他可能的参数
       auto: params.auto === "true" || Boolean(params.auto),
       continuous: params.continuous === "true" || Boolean(params.continuous),
@@ -83,7 +79,11 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
       }`;
     }
   } catch (error) {
-    console.error(`Error creating new task:`, error);
+    logger.error(
+      `Error creating new task: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error creating new task: ${
       error instanceof Error ? error.message : String(error)
     }`;

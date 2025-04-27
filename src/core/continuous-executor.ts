@@ -2,6 +2,7 @@ import { ApiConfig, TaskResult } from "../types";
 import { generateSystemPrompt } from "./prompts/system";
 import { SingleStepExecutor } from "./single-step-executor";
 import chalk from "chalk";
+import { logger } from "../utils/logger";
 
 /**
  * 连续执行器
@@ -18,7 +19,6 @@ export class ContinuousExecutor {
    * @param mode 模式
    * @param cwd 工作目录
    * @param maxSteps 最大步骤数
-   * @param verbose 是否详细输出
    * @param auto 是否自动执行（不需要用户确认）
    * @param rules 自定义规则
    * @param customInstructions 自定义指令
@@ -30,7 +30,6 @@ export class ContinuousExecutor {
     mode: string,
     cwd: string,
     maxSteps: number = 1000,
-    verbose: boolean = false,
     auto: boolean = false,
     rules?: string,
     customInstructions?: string,
@@ -52,7 +51,6 @@ export class ContinuousExecutor {
       apiConfig,
       mode,
       cwd,
-      verbose,
       this.systemPrompt,
       taskId!
     );
@@ -74,10 +72,10 @@ export class ContinuousExecutor {
       }
 
       // 打印任务信息
-      console.log(chalk.blue(`Starting continuous execution (${this.taskId})`));
-      console.log(chalk.blue(`Maximum steps: ${this.maxSteps}`));
-      console.log(chalk.blue(`Initial prompt: ${prompt}`));
-      console.log("");
+      logger.info(`Starting continuous execution (${this.taskId})`);
+      logger.info(`Maximum steps: ${this.maxSteps}`);
+      logger.info(`Initial prompt: ${prompt}`);
+      logger.info("");
 
       // 执行步骤
       let currentStep = 0;
@@ -85,7 +83,7 @@ export class ContinuousExecutor {
 
       while (currentStep < this.maxSteps) {
         currentStep++;
-        console.log(chalk.yellow(`Step ${currentStep}/${this.maxSteps}`));
+        logger.info(chalk.yellow(`Step ${currentStep}/${this.maxSteps}`));
 
         // 使用单步执行器执行当前步骤
         // 只在第一步添加用户消息
@@ -96,22 +94,22 @@ export class ContinuousExecutor {
         )) as { response: any; toolResult?: string };
 
         // 打印助手响应
-        console.log(chalk.cyan("Assistant:"));
-        console.log(result.response.text);
-        console.log("");
+        logger.info(chalk.cyan("Assistant:"));
+        logger.info(result.response.text);
+        logger.info("");
 
         // 检查是否有工具调用
         if (result.toolResult) {
           // 打印工具结果
-          console.log(chalk.magenta("Tool Result:"));
-          console.log(result.toolResult);
-          console.log("");
+          logger.info(chalk.magenta("Tool Result:"));
+          logger.info(result.toolResult);
+          logger.info("");
 
           // 更新输出
           finalOutput += `${result.response.text}\n\nTool Result:\n${result.toolResult}\n\n`;
         } else {
           // 没有工具调用，任务完成
-          console.log(chalk.green("Task completed without tool calls"));
+          logger.success("Task completed without tool calls");
           finalOutput += result.response.text;
           break;
         }
@@ -119,9 +117,7 @@ export class ContinuousExecutor {
 
       // 检查是否达到最大步骤数
       if (currentStep >= this.maxSteps) {
-        console.log(
-          chalk.yellow(`Reached maximum number of steps (${this.maxSteps})`)
-        );
+        logger.warn(`Reached maximum number of steps (${this.maxSteps})`);
         finalOutput +=
           "\n\nNote: Reached maximum number of steps. Task may not be fully completed.";
       }
@@ -132,7 +128,10 @@ export class ContinuousExecutor {
         success: true,
       };
     } catch (error) {
-      console.error("Error executing task:", error);
+      logger.error(
+        "Error executing task: " +
+          (error instanceof Error ? error.message : String(error))
+      );
       return {
         taskId: this.taskId!,
         output: "",

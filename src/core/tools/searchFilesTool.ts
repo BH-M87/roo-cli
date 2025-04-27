@@ -1,4 +1,5 @@
 import fs from "fs-extra";
+import { logger } from "../../utils/logger";
 import path from "path";
 import glob from "glob";
 import { ToolHandler } from "./types";
@@ -9,11 +10,7 @@ import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const searchFilesTool: ToolHandler = async ({
-  toolUse,
-  cwd,
-  verbose,
-}) => {
+export const searchFilesTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
   const regex = params.regex;
@@ -31,11 +28,9 @@ export const searchFilesTool: ToolHandler = async ({
     // 解析目录路径
     const fullPath = path.resolve(cwd, relDirPath);
 
-    if (verbose) {
-      console.log(`Searching files in directory: ${fullPath}`);
-      console.log(`Regex: ${regex}`);
-      console.log(`File pattern: ${filePattern || "*"}`);
-    }
+    logger.debug(`Searching files in directory: ${fullPath}`);
+    logger.debug(`Regex: ${regex}`);
+    logger.debug(`File pattern: ${filePattern || "*"}`);
 
     // 检查目录是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -123,7 +118,11 @@ export const searchFilesTool: ToolHandler = async ({
           }
         }
       } catch (error) {
-        console.error(`Error searching file ${file}:`, error);
+        logger.error(
+          `Error searching file ${file}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
         // 继续搜索其他文件
       }
     }
@@ -162,7 +161,11 @@ export const searchFilesTool: ToolHandler = async ({
 
     return result;
   } catch (error) {
-    console.error(`Error searching files in directory ${relDirPath}:`, error);
+    logger.error(
+      `Error searching files in directory ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error searching files in directory ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;

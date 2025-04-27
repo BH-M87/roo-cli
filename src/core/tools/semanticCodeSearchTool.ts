@@ -1,4 +1,5 @@
 import { ToolHandler } from "./types";
+import { logger } from "../../utils/logger";
 import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
 import { indexCodeFiles, searchCodeByQuery, CodeChunk } from "../rag";
 
@@ -7,11 +8,7 @@ import { indexCodeFiles, searchCodeByQuery, CodeChunk } from "../rag";
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const semanticCodeSearchTool: ToolHandler = async ({
-  toolUse,
-  cwd,
-  verbose,
-}) => {
+export const semanticCodeSearchTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
   const query = params.query;
@@ -27,25 +24,19 @@ export const semanticCodeSearchTool: ToolHandler = async ({
   }
 
   try {
-    if (verbose) {
-      console.log(
-        `Performing semantic code search in directory: ${relDirPath}`
-      );
-      console.log(`Query: ${query}`);
-      console.log(
-        `File pattern: ${
-          filePattern || "**/*.{js,ts,jsx,tsx,py,java,c,cpp,h,hpp,cs,go,rb,php}"
-        }`
-      );
-      console.log(`Top K: ${topK}`);
-    }
+    logger.debug(`Performing semantic code search in directory: ${relDirPath}`);
+    logger.debug(`Query: ${query}`);
+    logger.debug(
+      `File pattern: ${
+        filePattern || "**/*.{js,ts,jsx,tsx,py,java,c,cpp,h,hpp,cs,go,rb,php}"
+      }`
+    );
+    logger.debug(`Top K: ${topK}`);
 
     // Index code files
     const indexedCount = await indexCodeFiles(cwd, relDirPath, filePattern);
 
-    if (verbose) {
-      console.log(`Indexed ${indexedCount} code chunks`);
-    }
+    logger.debug(`Indexed ${indexedCount} code chunks`);
 
     // If no files were indexed, return early
     if (indexedCount === 0) {
@@ -240,9 +231,10 @@ export const semanticCodeSearchTool: ToolHandler = async ({
 
     return resultText;
   } catch (error) {
-    console.error(
-      `Error performing semantic code search in ${relDirPath}:`,
-      error
+    logger.error(
+      `Error performing semantic code search in ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     );
     return `Error performing semantic code search in ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)

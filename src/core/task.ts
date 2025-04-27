@@ -1,9 +1,10 @@
-import { TaskConfig, TaskResult, ApiConfig, ToolCall } from "../types";
+import { TaskConfig, TaskResult, ApiConfig } from "../types";
 import { getCurrentWorkingDirectory } from "../config/settings";
 import { generateSystemPrompt } from "./prompts/system";
 import { ContinuousExecutor } from "./continuous-executor";
 import { SingleStepExecutor } from "./single-step-executor";
 import { TaskManager } from "./task-manager";
+import { logger } from "../utils/logger";
 
 /**
  * 工具响应类型
@@ -32,7 +33,7 @@ function createOrGetTask(
   // 如果继续执行任务
   if (continueFromTask) {
     taskId = continueFromTask;
-    console.log(`Continuing from task: ${continueFromTask}`);
+    logger.info(`Continuing from task: ${continueFromTask}`);
 
     // 验证任务是否存在
     const task = taskManager.getTask(continueFromTask);
@@ -40,11 +41,11 @@ function createOrGetTask(
       throw new Error(`Task ${continueFromTask} not found`);
     }
 
-    console.log(`Task found with ${task.messages.length} messages`);
+    logger.info(`Task found with ${task.messages.length} messages`);
   } else {
     // 创建新任务
     taskId = taskManager.createTask(mode, workingDir, systemPrompt);
-    console.log(`Created new task: ${taskId}`);
+    logger.info(`Created new task: ${taskId}`);
   }
 
   return { taskId, taskManager };
@@ -62,7 +63,7 @@ export async function handleNewTask(params: {
   cwd?: string;
   continuous?: boolean;
   maxSteps?: number;
-  verbose?: boolean;
+  logLevel?: string;
   auto?: boolean;
   rules?: string;
   customInstructions?: string;
@@ -76,7 +77,7 @@ export async function handleNewTask(params: {
     cwd,
     continuous = false,
     maxSteps = 100,
-    verbose = false,
+    logLevel = "1", // 默认为 INFO 级别
     auto = false,
     rules,
     customInstructions,
@@ -103,13 +104,14 @@ export async function handleNewTask(params: {
     continueFromTask
   );
 
-  console.log(`Starting task (${taskId}) in ${mode} mode`);
-  console.log(`Working directory: ${workingDir}`);
-  console.log(`Prompt: ${prompt}`);
-  console.log(`Continuous mode: ${continuous ? "enabled" : "disabled"}`);
-  console.log(`Auto mode: ${auto ? "enabled" : "disabled"}`);
-  console.log(`Rules: ${rules || "none"}`);
-  console.log(
+  // 输出任务信息
+  logger.info(`Starting task (${taskId}) in ${mode} mode`);
+  logger.info(`Working directory: ${workingDir}`);
+  logger.info(`Prompt: ${prompt}`);
+  logger.info(`Continuous mode: ${continuous ? "enabled" : "disabled"}`);
+  logger.info(`Auto mode: ${auto ? "enabled" : "disabled"}`);
+  logger.info(`Rules: ${rules || "none"}`);
+  logger.info(
     `Custom instructions: ${
       customInstructions
         ? customInstructions.length > 50
@@ -118,7 +120,7 @@ export async function handleNewTask(params: {
         : "none"
     }`
   );
-  console.log(
+  logger.info(
     `Role definition: ${
       roleDefinition
         ? roleDefinition.length > 50
@@ -137,7 +139,6 @@ export async function handleNewTask(params: {
         mode,
         workingDir,
         maxSteps,
-        verbose,
         auto,
         rules,
         customInstructions,
@@ -150,11 +151,11 @@ export async function handleNewTask(params: {
     } else {
       // 单步执行模式
       // 创建单步执行器
+      // 直接使用 logLevel
       const executor = new SingleStepExecutor(
         apiConfig,
         mode,
         workingDir,
-        verbose,
         systemPrompt,
         taskId
       );
@@ -163,7 +164,10 @@ export async function handleNewTask(params: {
       return (await executor.execute(prompt, false, true)) as TaskResult;
     }
   } catch (error) {
-    console.error("Error executing task:", error);
+    logger.error(
+      "Error executing task: " +
+        (error instanceof Error ? error.message : String(error))
+    );
     return {
       taskId,
       output: "",
@@ -186,7 +190,7 @@ export async function executeTask(
   options?: {
     continuous?: boolean;
     maxSteps?: number;
-    verbose?: boolean;
+    logLevel?: string;
     auto?: boolean;
     continueFromTask?: string;
   }
@@ -198,7 +202,7 @@ export async function executeTask(
     cwd: config.cwd,
     continuous: options?.continuous || config.auto,
     maxSteps: options?.maxSteps,
-    verbose: options?.verbose,
+    logLevel: options?.logLevel,
     auto: options?.auto || config.auto,
     rules: config.rules,
     customInstructions: config.customInstructions,

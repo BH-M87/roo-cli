@@ -1,13 +1,14 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { ToolHandler } from './types';
+import fs from "fs-extra";
+import { logger } from "../../utils/logger";
+import path from "path";
+import { ToolHandler } from "./types";
 
 /**
  * 写入文件工具
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const writeToFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const writeToFileTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relPath = params.path;
   const content = params.content;
@@ -23,20 +24,24 @@ export const writeToFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) =>
   try {
     // 解析文件路径
     const fullPath = path.resolve(cwd, relPath);
-    
-    if (verbose) {
-      console.log(`Writing to file: ${fullPath}`);
-    }
+
+    logger.debug(`Writing to file: ${fullPath}`);
 
     // 确保目录存在
     await fs.ensureDir(path.dirname(fullPath));
 
     // 写入文件内容
-    await fs.writeFile(fullPath, content, 'utf-8');
+    await fs.writeFile(fullPath, content, "utf-8");
 
     return `Successfully wrote to file: ${relPath}`;
   } catch (error) {
-    console.error(`Error writing to file ${relPath}:`, error);
-    return `Error writing to file ${relPath}: ${error instanceof Error ? error.message : String(error)}`;
+    logger.error(
+      `Error writing to file ${relPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    return `Error writing to file ${relPath}: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
   }
 };

@@ -1,22 +1,20 @@
-import { ToolCall } from '../types';
-import { executeTool } from './tools';
-import { ToolUse } from './tools/types';
+import { ToolCall } from "../types";
+import { executeTool } from "./tools";
+import { ToolUse } from "./tools/types";
+import { logger } from "../utils/logger";
 
 /**
  * 工具执行器
  */
 export class ToolExecutor {
   private cwd: string;
-  private verbose: boolean;
 
   /**
    * 构造函数
    * @param cwd 当前工作目录
-   * @param verbose 是否详细输出
    */
-  constructor(cwd: string, verbose: boolean = false) {
+  constructor(cwd: string) {
     this.cwd = cwd;
-    this.verbose = verbose;
   }
 
   /**
@@ -26,19 +24,17 @@ export class ToolExecutor {
    */
   async execute(toolCall: ToolCall): Promise<string> {
     const { name, params } = toolCall;
-    
-    if (this.verbose) {
-      console.log(`Executing tool: ${name}`);
-      console.log(`Parameters:`, params);
-    }
-    
+
+    logger.debug(`Executing tool: ${name}`);
+    logger.debug(`Parameters: ${JSON.stringify(params)}`);
+
     // 创建工具使用对象
     const toolUse: ToolUse = {
       name,
       params,
     };
-    
+
     // 执行工具
-    return executeTool(toolUse, this.cwd, this.verbose);
+    return executeTool(toolUse, this.cwd);
   }
 }

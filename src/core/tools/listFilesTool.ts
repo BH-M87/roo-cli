@@ -1,4 +1,5 @@
 import fs from "fs-extra";
+import { logger } from "../../utils/logger";
 import path from "path";
 import glob from "glob";
 import { ToolHandler } from "./types";
@@ -9,7 +10,7 @@ import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
  * @param params 工具参数
  * @returns 工具执行结果
  */
-export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const listFilesTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
   const recursive = params.recursive === "true";
@@ -22,10 +23,8 @@ export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
     // 解析目录路径
     const fullPath = path.resolve(cwd, relDirPath);
 
-    if (verbose) {
-      console.log(`Listing files in directory: ${fullPath}`);
-      console.log(`Recursive: ${recursive}`);
-    }
+    logger.debug(`Listing files in directory: ${fullPath}`);
+    logger.debug(`Recursive: ${recursive}`);
 
     // 检查目录是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -95,7 +94,11 @@ export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
 
     return result;
   } catch (error) {
-    console.error(`Error listing files in directory ${relDirPath}:`, error);
+    logger.error(
+      `Error listing files in directory ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error listing files in directory ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;

@@ -7,7 +7,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
 import { setMcpServerUrl } from "../core/tools/mcpTool";
-import { printMessage } from "../utils/terminal";
+import { logger } from "../utils/logger";
 import { isPortInUse, killProcessOnPort } from "../utils/network";
 import { Provider } from "../core/provider";
 import {
@@ -86,17 +86,13 @@ export class McpSseServer extends EventEmitter {
     );
 
     if (!providerProfiles) {
-      printMessage(
-        "Provider profiles not found, using default or higher priority options",
-        "warning"
+      logger.warn(
+        "Provider profiles not found, using default or higher priority options"
       );
     }
 
     if (!this.settings) {
-      printMessage(
-        "Global settings not found, using default settings",
-        "warning"
-      );
+      logger.warn("Global settings not found, using default settings");
       this.settings = {};
     }
 
@@ -105,9 +101,8 @@ export class McpSseServer extends EventEmitter {
       const currentApiConfigName = providerProfiles.currentApiConfigName;
       this.apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
       if (this.apiConfig) {
-        printMessage(
-          `Using API configuration '${currentApiConfigName}' from provider profiles`,
-          "info"
+        logger.info(
+          `Using API configuration '${currentApiConfigName}' from provider profiles`
         );
       }
     }
@@ -116,17 +111,14 @@ export class McpSseServer extends EventEmitter {
     const envApiConfig = this.getEnvApiConfig();
     if (envApiConfig) {
       this.apiConfig = envApiConfig;
-      printMessage(
-        "Using API configuration from environment variables",
-        "info"
-      );
+      logger.info("Using API configuration from environment variables");
     }
 
     // 3. 从命令行选项获取 API 配置（优先级高于环境变量）
     const commandApiConfig = getApiConfig(this.commandOptions);
     if (commandApiConfig) {
       this.apiConfig = commandApiConfig;
-      printMessage("Using API configuration from command line options", "info");
+      logger.info("Using API configuration from command line options");
     }
 
     // 如果有 API 配置，创建 Provider
@@ -139,14 +131,10 @@ export class McpSseServer extends EventEmitter {
         this.settings,
         this.customModes
       );
-      printMessage(
-        `Provider initialized with ${this.apiConfig.apiProvider}`,
-        "success"
-      );
+      logger.success(`Provider initialized with ${this.apiConfig.apiProvider}`);
     } else {
-      printMessage(
-        "Provider not initialized, waiting for configuration message",
-        "warning"
+      logger.warn(
+        "Provider not initialized, waiting for configuration message"
       );
     }
   }
@@ -193,7 +181,7 @@ export class McpSseServer extends EventEmitter {
    */
   private registerTools(): void {
     if (!this.mcpServer) {
-      printMessage("MCP server not initialized", "error");
+      logger.error("MCP server not initialized");
       return;
     }
 
@@ -232,7 +220,6 @@ export class McpSseServer extends EventEmitter {
             const result = await tool.handler({
               toolUse,
               cwd,
-              verbose: true,
             });
 
             // 返回结果
@@ -267,7 +254,7 @@ export class McpSseServer extends EventEmitter {
    */
   async start(): Promise<boolean> {
     if (this.isRunning) {
-      printMessage("MCP server is already running", "info");
+      logger.info("MCP server is already running");
       return true;
     }
 
@@ -275,9 +262,8 @@ export class McpSseServer extends EventEmitter {
       // 检查端口是否被占用
       const portInUse = await isPortInUse(this.port);
       if (portInUse) {
-        printMessage(
-          `Port ${this.port} is already in use, attempting to kill the process...`,
-          "warning"
+        logger.warn(
+          `Port ${this.port} is already in use, attempting to kill the process...`
         );
         await killProcessOnPort(this.port);
       }
@@ -330,7 +316,7 @@ export class McpSseServer extends EventEmitter {
             return res.status(500).send("MCP server not initialized");
           }
 
-          printMessage("Client connected to SSE endpoint", "info");
+          logger.info("Client connected to SSE endpoint");
 
           // 创建 SSE 传输
           this.currentTransport = new SSEServerTransport("/messages", res);
@@ -339,14 +325,13 @@ export class McpSseServer extends EventEmitter {
           await this.mcpServer
             .connect(this.currentTransport)
             .then(() => {
-              printMessage("SSE transport connected successfully", "success");
+              logger.success("SSE transport connected successfully");
             })
             .catch((error) => {
-              printMessage(
+              logger.error(
                 `SSE transport connection error: ${
                   error instanceof Error ? error.message : String(error)
-                }`,
-                "error"
+                }`
               );
               // 连接失败时清除传输
               this.currentTransport = null;
@@ -354,16 +339,15 @@ export class McpSseServer extends EventEmitter {
 
           // 处理连接关闭
           req.on("close", () => {
-            printMessage("Client disconnected from SSE endpoint", "info");
+            logger.info("Client disconnected from SSE endpoint");
             // 清除传输
             this.currentTransport = null;
           });
         } catch (error) {
-          printMessage(
+          logger.error(
             `SSE setup error: ${
               error instanceof Error ? error.message : String(error)
-            }`,
-            "error"
+            }`
           );
           res.status(500).send("Internal Server Error");
         }
@@ -387,13 +371,12 @@ export class McpSseServer extends EventEmitter {
           // 使用 SSE 传输处理消息
           await this.currentTransport.handlePostMessage(req, res, req.body);
 
-          printMessage("Processed message from client", "info");
+          logger.info("Processed message from client");
         } catch (error) {
-          printMessage(
+          logger.error(
             `Error processing message: ${
               error instanceof Error ? error.message : String(error)
-            }`,
-            "error"
+            }`
           );
           return res.status(500).json({
             error: `Internal server error: ${
@@ -405,29 +388,25 @@ export class McpSseServer extends EventEmitter {
 
       // 启动服务器
       this.server = app.listen(this.port, () => {
-        printMessage(`MCP SSE server started on port ${this.port}`, "success");
+        logger.success(`MCP SSE server started on port ${this.port}`);
         this.isRunning = true;
 
         // 设置 MCP 服务器 URL
         const serverUrl = `http://localhost:${this.port}`;
         setMcpServerUrl(serverUrl);
 
-        printMessage(`SSE endpoint available at ${serverUrl}/sse`, "info");
-        printMessage(
-          `Messages endpoint available at ${serverUrl}/messages`,
-          "info"
-        );
+        logger.info(`SSE endpoint available at ${serverUrl}/sse`);
+        logger.info(`Messages endpoint available at ${serverUrl}/messages`);
 
         this.emit("started", { port: this.port, url: serverUrl });
       });
 
       return true;
     } catch (error) {
-      printMessage(
+      logger.error(
         `Failed to start MCP server: ${
           error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
+        }`
       );
       return false;
     }
@@ -439,7 +418,7 @@ export class McpSseServer extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     if (!this.isRunning) {
-      printMessage("MCP server is not running", "info");
+      logger.info("MCP server is not running");
       return true;
     }
 
@@ -459,16 +438,15 @@ export class McpSseServer extends EventEmitter {
       this.isRunning = false;
       setMcpServerUrl(null);
 
-      printMessage("MCP server stopped", "success");
+      logger.success("MCP server stopped");
       this.emit("stopped");
 
       return true;
     } catch (error) {
-      printMessage(
+      logger.error(
         `Failed to stop MCP server: ${
           error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
+        }`
       );
       return false;
     }

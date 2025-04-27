@@ -7,7 +7,7 @@ import {
   getMergedCustomModes,
 } from "../config/settings";
 import { toolRegistry } from "../core/tools";
-import { printMessage } from "../utils/terminal";
+import { logger } from "../utils/logger";
 import { VERSION } from "../config/version";
 
 /**
@@ -30,7 +30,7 @@ export class Server {
 
     // 添加请求日志中间件
     this.app.use((req, res, next) => {
-      printMessage(`${req.method} ${req.path}`, "info");
+      logger.info(`${req.method} ${req.path}`);
       next();
     });
 
@@ -42,7 +42,7 @@ export class Server {
         res: express.Response,
         next: express.NextFunction
       ) => {
-        printMessage(`Error: ${err.message}`, "error");
+        logger.error(`Error: ${err.message}`);
         res.status(500).json({
           error: "Internal Server Error",
           message: err.message,
@@ -150,11 +150,10 @@ export class Server {
           availableTools: tools.filter((t) => t.available).length,
         });
       } catch (error) {
-        printMessage(
+        logger.error(
           `Error getting tools: ${
             error instanceof Error ? error.message : String(error)
-          }`,
-          "error"
+          }`
         );
         res.status(500).json({
           error: "Failed to get tools",
@@ -237,9 +236,9 @@ export class Server {
       try {
         this.server = this.app.listen(this.port, () => {
           const serverUrl = `http://localhost:${this.port}`;
-          printMessage(`Server running on ${serverUrl}`, "success");
-          printMessage(`API documentation available at ${serverUrl}/`, "info");
-          printMessage(`Health check available at ${serverUrl}/health`, "info");
+          logger.success(`Server running on ${serverUrl}`);
+          logger.info(`API documentation available at ${serverUrl}/`);
+          logger.info(`Health check available at ${serverUrl}/health`);
 
           resolve({
             url: serverUrl,
@@ -249,15 +248,14 @@ export class Server {
 
         // 处理服务器错误
         this.server.on("error", (err: Error) => {
-          printMessage(`Server error: ${err.message}`, "error");
+          logger.error(`Server error: ${err.message}`);
           reject(err);
         });
       } catch (error) {
-        printMessage(
+        logger.error(
           `Failed to start server: ${
             error instanceof Error ? error.message : String(error)
-          }`,
-          "error"
+          }`
         );
         reject(error);
       }
@@ -271,18 +269,18 @@ export class Server {
   stop(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.server) {
-        printMessage("Stopping server...", "info");
+        logger.info("Stopping server...");
         this.server.close((err: Error) => {
           if (err) {
-            printMessage(`Error stopping server: ${err.message}`, "error");
+            logger.error(`Error stopping server: ${err.message}`);
             reject(err);
           } else {
-            printMessage("Server stopped successfully", "success");
+            logger.success("Server stopped successfully");
             resolve();
           }
         });
       } else {
-        printMessage("Server is not running", "info");
+        logger.info("Server is not running");
         resolve();
       }
     });
@@ -304,19 +302,16 @@ export async function createServer(
   modesFile?: string
 ): Promise<Server> {
   try {
-    printMessage("Creating server...", "info");
+    logger.info("Creating server...");
 
     // Load configuration
-    printMessage("Loading configuration...", "info");
+    logger.info("Loading configuration...");
     const providerProfiles = await readProviderProfiles(providerFile);
     const settings = await readGlobalSettings(settingsFile);
     const customModes = await getMergedCustomModes(settings, modesFile);
 
     if (!providerProfiles) {
-      printMessage(
-        "Provider profiles not found, using default configuration",
-        "warning"
-      );
+      logger.warn("Provider profiles not found, using default configuration");
       // 使用默认配置或环境变量
       const defaultApiConfig = getDefaultApiConfig();
       if (!defaultApiConfig) {
@@ -337,10 +332,7 @@ export async function createServer(
     }
 
     if (!settings) {
-      printMessage(
-        "Global settings not found, using default settings",
-        "warning"
-      );
+      logger.warn("Global settings not found, using default settings");
     }
 
     // Get current API configuration
@@ -348,9 +340,8 @@ export async function createServer(
     const apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
 
     if (!apiConfig) {
-      printMessage(
-        `API configuration '${currentApiConfigName}' not found, checking environment variables`,
-        "warning"
+      logger.warn(
+        `API configuration '${currentApiConfigName}' not found, checking environment variables`
       );
 
       // 尝试使用环境变量
@@ -373,21 +364,19 @@ export async function createServer(
     }
 
     // Create provider
-    printMessage(
-      `Creating provider with ${apiConfig.apiProvider} configuration`,
-      "info"
+    logger.info(
+      `Creating provider with ${apiConfig.apiProvider} configuration`
     );
     const provider = new Provider(apiConfig, settings || {}, customModes || []);
 
     // Create server
-    printMessage(`Creating server on port ${port}`, "info");
+    logger.info(`Creating server on port ${port}`);
     return new Server(provider, port);
   } catch (error) {
-    printMessage(
+    logger.error(
       `Error creating server: ${
         error instanceof Error ? error.message : String(error)
-      }`,
-      "error"
+      }`
     );
     throw error;
   }
@@ -407,10 +396,7 @@ function getDefaultApiConfig(): any {
 
   // 如果有 OpenAI 配置，使用 OpenAI
   if (openAiApiKey) {
-    printMessage(
-      "Using OpenAI configuration from environment variables",
-      "info"
-    );
+    logger.info("Using OpenAI configuration from environment variables");
     return {
       apiProvider: "openai",
       openAiApiKey,
@@ -422,10 +408,7 @@ function getDefaultApiConfig(): any {
 
   // 如果有 Anthropic 配置，使用 Anthropic
   if (anthropicApiKey) {
-    printMessage(
-      "Using Anthropic configuration from environment variables",
-      "info"
-    );
+    logger.info("Using Anthropic configuration from environment variables");
     return {
       apiProvider: "anthropic",
       anthropicApiKey,

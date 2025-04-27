@@ -3,6 +3,7 @@
  */
 
 import fs from "fs-extra";
+import { logger } from "../../utils/logger";
 import path from "path";
 import { ToolResponse } from "../task";
 import { DEFAULT_REL_DIR_PATH } from "../../config/constants";
@@ -29,13 +30,12 @@ export interface ToolUse {
 export type ToolHandler = (params: {
   toolUse: ToolUse;
   cwd: string;
-  verbose: boolean;
 }) => Promise<ToolResponse>;
 
 /**
  * 读取文件工具
  */
-export const readFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const readFileTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relPath = params.path;
 
@@ -47,9 +47,7 @@ export const readFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
     // 解析文件路径
     const fullPath = path.resolve(cwd, relPath);
 
-    if (verbose) {
-      console.log(`Reading file: ${fullPath}`);
-    }
+    logger.debug(`Reading file: ${fullPath}`);
 
     // 检查文件是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -65,7 +63,11 @@ export const readFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
 
     return result;
   } catch (error) {
-    console.error(`Error reading file ${relPath}:`, error);
+    logger.error(
+      `Error reading file ${relPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error reading file ${relPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;
@@ -75,11 +77,7 @@ export const readFileTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
 /**
  * 写入文件工具
  */
-export const writeToFileTool: ToolHandler = async ({
-  toolUse,
-  cwd,
-  verbose,
-}) => {
+export const writeToFileTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relPath = params.path;
   const content = params.content;
@@ -96,9 +94,7 @@ export const writeToFileTool: ToolHandler = async ({
     // 解析文件路径
     const fullPath = path.resolve(cwd, relPath);
 
-    if (verbose) {
-      console.log(`Writing to file: ${fullPath}`);
-    }
+    logger.debug(`Writing to file: ${fullPath}`);
 
     // 确保目录存在
     await fs.ensureDir(path.dirname(fullPath));
@@ -108,7 +104,11 @@ export const writeToFileTool: ToolHandler = async ({
 
     return `Successfully wrote to file: ${relPath}`;
   } catch (error) {
-    console.error(`Error writing to file ${relPath}:`, error);
+    logger.error(
+      `Error writing to file ${relPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error writing to file ${relPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;
@@ -118,11 +118,7 @@ export const writeToFileTool: ToolHandler = async ({
 /**
  * 执行命令工具
  */
-export const executeCommandTool: ToolHandler = async ({
-  toolUse,
-  cwd,
-  verbose,
-}) => {
+export const executeCommandTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const command = params.command;
   const customCwd = params.cwd;
@@ -135,16 +131,18 @@ export const executeCommandTool: ToolHandler = async ({
     // 解析工作目录
     const workingDir = customCwd ? customCwd : cwd;
 
-    if (verbose) {
-      console.log(`Executing command: ${command}`);
-      console.log(`Working directory: ${workingDir}`);
-    }
+    logger.debug(`Executing command: ${command}`);
+    logger.debug(`Working directory: ${workingDir}`);
 
     // 在实际实现中，这里会执行命令
     // 但为了简化，我们只返回一个模拟结果
     return `Command: ${command}\nWorking directory: ${workingDir}\n\nOutput: (Command execution simulated)`;
   } catch (error) {
-    console.error(`Error executing command ${command}:`, error);
+    logger.error(
+      `Error executing command ${command}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error executing command ${command}: ${
       error instanceof Error ? error.message : String(error)
     }`;
@@ -154,7 +152,7 @@ export const executeCommandTool: ToolHandler = async ({
 /**
  * 列出文件工具
  */
-export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
+export const listFilesTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
   const recursive = params.recursive === "true";
@@ -167,10 +165,8 @@ export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
     // 解析目录路径
     const fullPath = path.resolve(cwd, relDirPath);
 
-    if (verbose) {
-      console.log(`Listing files in directory: ${fullPath}`);
-      console.log(`Recursive: ${recursive}`);
-    }
+    logger.debug(`Listing files in directory: ${fullPath}`);
+    logger.debug(`Recursive: ${recursive}`);
 
     // 检查目录是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -198,7 +194,11 @@ export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
 
     return result;
   } catch (error) {
-    console.error(`Error listing files in directory ${relDirPath}:`, error);
+    logger.error(
+      `Error listing files in directory ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error listing files in directory ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;
@@ -208,11 +208,7 @@ export const listFilesTool: ToolHandler = async ({ toolUse, cwd, verbose }) => {
 /**
  * 搜索文件工具
  */
-export const searchFilesTool: ToolHandler = async ({
-  toolUse,
-  cwd,
-  verbose,
-}) => {
+export const searchFilesTool: ToolHandler = async ({ toolUse, cwd }) => {
   const { params } = toolUse;
   const relDirPath = params.path || DEFAULT_REL_DIR_PATH;
   const regex = params.regex;
@@ -230,11 +226,9 @@ export const searchFilesTool: ToolHandler = async ({
     // 解析目录路径
     const fullPath = path.resolve(cwd, relDirPath);
 
-    if (verbose) {
-      console.log(`Searching files in directory: ${fullPath}`);
-      console.log(`Regex: ${regex}`);
-      console.log(`File pattern: ${filePattern || "*"}`);
-    }
+    logger.debug(`Searching files in directory: ${fullPath}`);
+    logger.debug(`Regex: ${regex}`);
+    logger.debug(`File pattern: ${filePattern || "*"}`);
 
     // 检查目录是否存在
     if (!(await fs.pathExists(fullPath))) {
@@ -261,7 +255,11 @@ export const searchFilesTool: ToolHandler = async ({
       filePattern || "*"
     })\n\nSearch operation simulated. No actual search was performed.`;
   } catch (error) {
-    console.error(`Error searching files in directory ${relDirPath}:`, error);
+    logger.error(
+      `Error searching files in directory ${relDirPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
     return `Error searching files in directory ${relDirPath}: ${
       error instanceof Error ? error.message : String(error)
     }`;

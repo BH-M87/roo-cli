@@ -5,6 +5,7 @@ import axios from "axios";
 import { parseAssistantMessage } from "../core/assistant-message";
 import { Message, MessageRole } from "../core/task-manager";
 import { ApiProvider } from "./config";
+import { logger } from "../utils/logger";
 
 /**
  * Base class for API handlers
@@ -148,7 +149,10 @@ export class AnthropicHandler extends ApiHandler {
         toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       };
     } catch (error) {
-      console.error("Error calling Anthropic API:", error);
+      logger.error(
+        "Error calling Anthropic API: " +
+          (error instanceof Error ? error.message : String(error))
+      );
       throw error;
     }
   }
@@ -166,7 +170,7 @@ export class OpenAiHandler extends ApiHandler {
       throw new Error("OpenAI API key is required");
     }
     this.baseUrl = config.openAiBaseUrl || "https://api.openai.com/v1";
-    console.log(`OpenAI API configured with base URL: ${this.baseUrl}`);
+    logger.info(`OpenAI API configured with base URL: ${this.baseUrl}`);
   }
 
   getModel() {
@@ -185,7 +189,7 @@ export class OpenAiHandler extends ApiHandler {
       const modelId = this.getModel().id;
       const maxTokens = this.config.openAiCustomModelInfo?.maxTokens || 4000;
 
-      console.log(`Using model: ${modelId}`);
+      logger.info(`Using model: ${modelId}`);
 
       // 准备消息
       const apiMessages = [];
@@ -284,12 +288,16 @@ export class OpenAiHandler extends ApiHandler {
       };
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.error(
-          `OpenAI API error (${error.response.status}):`,
-          error.response.data
+        logger.error(
+          `OpenAI API error (${error.response.status}): ${JSON.stringify(
+            error.response.data
+          )}`
         );
       } else {
-        console.error("Error calling OpenAI API:", error);
+        logger.error(
+          "Error calling OpenAI API: " +
+            (error instanceof Error ? error.message : String(error))
+        );
       }
       throw error;
     }

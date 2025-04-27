@@ -173,8 +173,17 @@ roo new "Create a simple Node.js HTTP server" --continuous
 # Specify maximum number of steps
 roo new "Create a simple Node.js HTTP server" --continuous --max-steps 5
 
-# Enable verbose output
-roo new "Create a simple Node.js HTTP server" --continuous --verbose
+# Set log level (debug=0, info=1, success=2, warn=3, error=4)
+roo new "Create a simple Node.js HTTP server" --log-level debug
+roo new "Create a simple Node.js HTTP server" --log-level 0
+
+# Set log level to info (default)
+roo new "Create a simple Node.js HTTP server" --log-level info
+roo new "Create a simple Node.js HTTP server" --log-level 1
+
+# Set log level to error (minimal output)
+roo new "Create a simple Node.js HTTP server" --log-level error
+roo new "Create a simple Node.js HTTP server" --log-level 4
 ```
 
 ### Auto Mode
@@ -258,11 +267,17 @@ roo tools --mode code
 # Execute a tool
 roo tool read_file --params '{"path": "src/index.js"}'
 
-# Execute a tool with verbose output
-roo tool execute_command --params '{"command": "ls -la"}' --verbose
+# Execute a tool with debug log level
+roo tool execute_command --params '{"command": "ls -la"}' --log-level debug
 
 # Execute a tool in a specific directory
 roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to/directory
+
+# Execute a tool with info log level (default)
+roo tool read_file --params '{"path": "src/index.js"}' --log-level info
+
+# Execute a tool with error log level (minimal output)
+roo tool read_file --params '{"path": "src/index.js"}' --log-level error
 ```
 
 ### MCP Server

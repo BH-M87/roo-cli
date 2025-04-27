@@ -17,13 +17,14 @@ import { DEFAULT_TASK_CONFIG } from "./config/constants";
 import { createServer } from "./server";
 import { Provider } from "./core/provider";
 import { handleNewTask } from "./core/task";
-import { printMessage } from "./utils/terminal";
+
 import { CommandOptions, TaskConfig } from "./types";
 import { McpStdioServer } from "./mcp/stdio-server";
 import { McpSseServer } from "./mcp/sse-server";
 import { setApiConfig } from "./core/tools/newTaskTool";
 import { getApiConfig } from "./api/config";
 import { VERSION } from "./config/version";
+import { logger, LogLevel, setLogLevel } from "./utils/logger";
 
 // Load environment variables
 dotenv.config();
@@ -48,7 +49,11 @@ program
   .option("-p, --provider-file <path>", "Path to provider profiles file")
   .option("-s, --settings-file <path>", "Path to global settings file")
   .option("-o, --modes-file <path>", "Path to custom modes file")
-  .option("-v, --verbose", "Enable verbose output")
+  .option(
+    "--log-level <level>",
+    "Set log level (debug=0, info=1, success=2, warn=3, error=4, or 0-4)",
+    "1"
+  )
   .option("--continuous", "Enable continuous execution mode")
   .option(
     "--max-steps <steps>",
@@ -81,11 +86,28 @@ program
   })
   .action(async (promptArg, options: CommandOptions) => {
     try {
+      // 设置日志级别
+      if (options.logLevel) {
+        // 尝试将日志级别解析为数字
+        const logLevelValue = parseInt(options.logLevel, 10);
+
+        if (!isNaN(logLevelValue) && logLevelValue >= 0 && logLevelValue <= 4) {
+          // 如果是有效的数字，直接设置
+          setLogLevel(logLevelValue);
+        } else {
+          // 使用 logger.setLevel 方法设置日志级别
+          logger.setLevel(options.logLevel);
+        }
+      } else {
+        // 默认为 INFO 级别
+        setLogLevel(LogLevel.INFO);
+      }
+
       // Get prompt from argument or interactive input
       const prompt = promptArg || options.prompt;
 
       if (!prompt) {
-        printMessage("Error: Prompt is required", "error");
+        logger.error("Error: Prompt is required");
         process.exit(1);
       }
 
@@ -104,9 +126,8 @@ program
         apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
 
         if (!apiConfig) {
-          printMessage(
-            `Error: API configuration '${currentApiConfigName}' not found`,
-            "error"
+          logger.error(
+            `Error: API configuration '${currentApiConfigName}' not found`
           );
           process.exit(1);
         }
@@ -115,17 +136,12 @@ program
       // 设置 API 配置，以便工具可以使用
       setApiConfig(apiConfig);
 
-      if (options.verbose) {
-        printMessage(`Using API provider: ${apiConfig.apiProvider}`, "info");
-        printMessage(`Using mode: ${taskConfig.mode}`, "info");
-        printMessage(
-          `Working directory: ${taskConfig.cwd || process.cwd()}`,
-          "info"
-        );
-      }
+      logger.info(`Using API provider: ${apiConfig.apiProvider}`);
+      logger.info(`Using mode: ${taskConfig.mode}`);
+      logger.info(`Working directory: ${taskConfig.cwd || process.cwd()}`);
 
       // Execute task
-      printMessage("Executing task...", "info");
+      logger.info("Executing task...");
       const result = await handleNewTask({
         prompt: taskConfig.message,
         mode: taskConfig.mode,
@@ -133,7 +149,7 @@ program
         cwd: taskConfig.cwd,
         continuous: options.continuous,
         maxSteps: options.maxSteps ? parseInt(options.maxSteps, 10) : undefined,
-        verbose: options.verbose,
+        logLevel: options.logLevel,
         auto: taskConfig.auto,
         rules: taskConfig.rules,
         customInstructions: taskConfig.customInstructions,
@@ -142,17 +158,18 @@ program
       });
 
       if (result.success) {
-        console.log("\n" + result.output + "\n");
-        printMessage("Task completed successfully", "success");
-        printMessage(`Task ID: ${result.taskId}`, "info");
+        // 输出结果
+        logger.always("\n" + result.output + "\n");
+        logger.success("Task completed successfully");
+        logger.success(`Task ID: ${result.taskId}`);
       } else {
-        printMessage(`Task failed: ${result.error}`, "error");
-        printMessage(`Task ID: ${result.taskId}`, "info");
+        // 输出错误
+        logger.error(`Task failed: ${result.error}`);
+        logger.error(`Task ID: ${result.taskId}`);
       }
     } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
+      logger.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
       );
       process.exit(1);
     }
@@ -164,10 +181,10 @@ program
   .description("Execute a tool")
   .option("-p, --params <json>", "Tool parameters in JSON format")
   .option("-c, --cwd <path>", "Working directory")
-  .option("-v, --verbose", "Enable verbose output")
   .option("--provider-file <path>", "Path to provider profiles file")
   .option("--settings-file <path>", "Path to global settings file")
   .option("--modes-file <path>", "Path to custom modes file")
+  .option("--log-level <level>", "Log level (debug, info, warn, error)", "info")
   .action(async (name, options) => {
     try {
       // Parse parameters
@@ -176,11 +193,10 @@ program
         try {
           params = JSON.parse(options.params);
         } catch (error) {
-          printMessage(
+          logger.error(
             `Error parsing parameters: ${
               error instanceof Error ? error.message : String(error)
-            }`,
-            "error"
+            }`
           );
           process.exit(1);
         }
@@ -203,9 +219,8 @@ program
         apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
 
         if (!apiConfig) {
-          printMessage(
-            `Error: API configuration '${currentApiConfigName}' not found`,
-            "error"
+          logger.error(
+            `Error: API configuration '${currentApiConfigName}' not found`
           );
           process.exit(1);
         }
@@ -223,20 +238,22 @@ program
         params,
       };
 
+      // 设置日志级别
+      logger.setLevel(options.logLevel);
+
       // Execute tool
-      printMessage(`Executing tool: ${name}`, "info");
+      logger.info(`Executing tool: ${name}`);
       const result = await provider.executeTool(
         toolUse,
         options.cwd,
-        options.verbose
+        options.logLevel
       );
 
       // Print result
       console.log("\n" + result + "\n");
     } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
+      logger.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
       );
       process.exit(1);
     }
@@ -276,18 +293,17 @@ program
       );
 
       // Print tool list
-      printMessage(`Available tools in ${options.mode} mode:`, "info");
+      logger.info(`Available tools in ${options.mode} mode:`);
       console.log("");
 
       for (const [name, description] of Object.entries(toolDescriptions)) {
-        printMessage(name, "success");
+        logger.success(name);
         console.log(description);
         console.log("");
       }
     } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
+      logger.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
       );
       process.exit(1);
     }
@@ -367,7 +383,7 @@ program
     try {
       const port = parseInt(options.port, 10);
 
-      printMessage(`Starting MCP SSE server on port ${port}...`, "info");
+      logger.info(`Starting MCP SSE server on port ${port}...`);
 
       const server = new McpSseServer(port, options);
 
@@ -375,32 +391,25 @@ program
 
       if (success) {
         const status = await server.getStatus();
-        printMessage(
-          `MCP SSE server started successfully at ${status.url}`,
-          "success"
-        );
-        printMessage(`SSE endpoint available at ${status.url}/sse`, "info");
-        printMessage(
-          `Messages endpoint available at ${status.url}/messages`,
-          "info"
-        );
-        printMessage("Press Ctrl+C to stop the server", "info");
+        logger.success(`MCP SSE server started successfully at ${status.url}`);
+        logger.info(`SSE endpoint available at ${status.url}/sse`);
+        logger.info(`Messages endpoint available at ${status.url}/messages`);
+        logger.info("Press Ctrl+C to stop the server");
 
         // Keep the process running until it's terminated
         process.on("SIGINT", async () => {
-          printMessage("Shutting down MCP SSE server...", "info");
+          logger.info("Shutting down MCP SSE server...");
           await server.stop();
-          printMessage("MCP SSE server stopped", "success");
+          logger.success("MCP SSE server stopped");
           process.exit(0);
         });
       } else {
-        printMessage("Failed to start MCP SSE server", "error");
+        logger.error("Failed to start MCP SSE server");
         process.exit(1);
       }
     } catch (error) {
-      printMessage(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        "error"
+      logger.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
       );
       process.exit(1);
     }
@@ -418,7 +427,7 @@ program
     try {
       const port = parseInt(options.port, 10);
 
-      printMessage(`Starting Roo server on port ${port}...`, "info");
+      logger.info(`Starting Roo server on port ${port}...`);
 
       const server = await createServer(
         port,
@@ -429,28 +438,24 @@ program
 
       const status = await server.start();
 
-      printMessage(`Server is running at ${status.url}`, "success");
-      printMessage(`API documentation available at ${status.url}/`, "info");
-      printMessage(`Health check available at ${status.url}/health`, "info");
-      printMessage(
-        `Tools endpoint available at ${status.url}/api/tools`,
-        "info"
-      );
-      printMessage("Press Ctrl+C to stop the server", "info");
+      logger.success(`Server is running at ${status.url}`);
+      logger.info(`API documentation available at ${status.url}/`);
+      logger.info(`Health check available at ${status.url}/health`);
+      logger.info(`Tools endpoint available at ${status.url}/api/tools`);
+      logger.info("Press Ctrl+C to stop the server");
 
       // Handle graceful shutdown
       process.on("SIGINT", async () => {
-        printMessage("Shutting down server...", "info");
+        logger.info("Shutting down server...");
         await server.stop();
-        printMessage("Server stopped", "success");
+        logger.success("Server stopped");
         process.exit(0);
       });
     } catch (error) {
-      printMessage(
+      logger.error(
         `Error starting server: ${
           error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
+        }`
       );
       process.exit(1);
     }
@@ -484,14 +489,14 @@ async function loadTaskConfig(
   if (options.configFile) {
     // 使用 resolveFilePath 确保路径是绝对的
     const resolvedConfigPath = resolveFilePath(options.configFile);
-    printMessage(`Loading task config from ${resolvedConfigPath}`, "info");
+    logger.info(`Loading task config from ${resolvedConfigPath}`);
 
     fileConfig = await readTaskConfig(resolvedConfigPath);
 
     // 检查是否使用了默认配置（文件不存在）
     const isDefaultConfig = fileConfig === DEFAULT_TASK_CONFIG;
     if (isDefaultConfig) {
-      printMessage(`Config file not found, using default config`, "warning");
+      logger.warn(`Config file not found, using default config`);
     }
   } else {
     fileConfig = DEFAULT_TASK_CONFIG;

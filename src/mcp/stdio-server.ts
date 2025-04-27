@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { EventEmitter } from "events";
 import { Provider } from "../core/provider";
-import { printMessage } from "../utils/terminal";
+import { logger } from "../utils/logger";
 import {
   readProviderProfiles,
   readGlobalSettings,
@@ -64,17 +64,13 @@ export class McpStdioServer extends EventEmitter {
     );
 
     if (!providerProfiles) {
-      printMessage(
-        "Provider profiles not found, using default or higher priority options",
-        "warning"
+      logger.warn(
+        "Provider profiles not found, using default or higher priority options"
       );
     }
 
     if (!this.settings) {
-      printMessage(
-        "Global settings not found, using default settings",
-        "warning"
-      );
+      logger.warn("Global settings not found, using default settings");
       this.settings = {};
     }
 
@@ -83,9 +79,8 @@ export class McpStdioServer extends EventEmitter {
       const currentApiConfigName = providerProfiles.currentApiConfigName;
       this.apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
       if (this.apiConfig) {
-        printMessage(
-          `Using API configuration '${currentApiConfigName}' from provider profiles`,
-          "info"
+        logger.info(
+          `Using API configuration '${currentApiConfigName}' from provider profiles`
         );
       }
     }
@@ -94,17 +89,14 @@ export class McpStdioServer extends EventEmitter {
     const envApiConfig = this.getEnvApiConfig();
     if (envApiConfig) {
       this.apiConfig = envApiConfig;
-      printMessage(
-        "Using API configuration from environment variables",
-        "info"
-      );
+      logger.info("Using API configuration from environment variables");
     }
 
     // 3. 从命令行选项获取 API 配置（优先级高于环境变量）
     const commandApiConfig = getApiConfig(this.commandOptions);
     if (commandApiConfig) {
       this.apiConfig = commandApiConfig;
-      printMessage("Using API configuration from command line options", "info");
+      logger.info("Using API configuration from command line options");
     }
 
     // 如果有 API 配置，创建 Provider
@@ -117,14 +109,10 @@ export class McpStdioServer extends EventEmitter {
         this.settings,
         this.customModes
       );
-      printMessage(
-        `Provider initialized with ${this.apiConfig.apiProvider}`,
-        "success"
-      );
+      logger.success(`Provider initialized with ${this.apiConfig.apiProvider}`);
     } else {
-      printMessage(
-        "Provider not initialized, waiting for configuration message",
-        "warning"
+      logger.warn(
+        "Provider not initialized, waiting for configuration message"
       );
     }
   }
@@ -205,7 +193,6 @@ export class McpStdioServer extends EventEmitter {
             const result = await tool.handler({
               toolUse,
               cwd,
-              verbose: true,
             });
 
             // 返回结果
@@ -240,7 +227,7 @@ export class McpStdioServer extends EventEmitter {
    */
   async start(): Promise<boolean> {
     if (this.isRunning) {
-      printMessage("MCP Stdio server is already running", "info");
+      logger.info("MCP Stdio server is already running");
       return true;
     }
 
@@ -255,16 +242,15 @@ export class McpStdioServer extends EventEmitter {
       await this.server.connect(this.transport);
 
       this.isRunning = true;
-      printMessage("MCP Stdio server started", "success");
+      logger.success("MCP Stdio server started");
       this.emit("started");
 
       return true;
     } catch (error) {
-      printMessage(
+      logger.error(
         `Failed to start MCP Stdio server: ${
           error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
+        }`
       );
       return false;
     }
@@ -276,23 +262,22 @@ export class McpStdioServer extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     if (!this.isRunning) {
-      printMessage("MCP Stdio server is not running", "info");
+      logger.info("MCP Stdio server is not running");
       return true;
     }
 
     try {
       // 断开连接 - MCP SDK doesn't have a disconnect method, so we'll just set isRunning to false
       this.isRunning = false;
-      printMessage("MCP Stdio server stopped", "success");
+      logger.success("MCP Stdio server stopped");
       this.emit("stopped");
 
       return true;
     } catch (error) {
-      printMessage(
+      logger.error(
         `Failed to stop MCP Stdio server: ${
           error instanceof Error ? error.message : String(error)
-        }`,
-        "error"
+        }`
       );
       return false;
     }
