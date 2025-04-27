@@ -60,28 +60,6 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   soundVolume: 0.5,
   language: "en",
   telemetrySetting: "enabled",
-  ragEnabled: true,
-  ragSettings: {
-    autoIndexWorkspace: true,
-    maxResultsPerQuery: 5,
-    supportedFileTypes: [
-      "js",
-      "ts",
-      "jsx",
-      "tsx",
-      "py",
-      "java",
-      "c",
-      "cpp",
-      "h",
-      "hpp",
-      "cs",
-      "go",
-      "rb",
-      "php",
-    ],
-    excludePatterns: ["node_modules", "dist", "build", ".git"],
-  },
   customModes: [
     {
       slug: "test",
