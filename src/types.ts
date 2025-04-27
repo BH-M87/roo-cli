@@ -34,6 +34,13 @@ export interface ApiConfig {
   id?: string;
 }
 
+export interface RagSettings {
+  autoIndexWorkspace?: boolean;
+  maxResultsPerQuery?: number;
+  supportedFileTypes?: string[];
+  excludePatterns?: string[];
+}
+
 export interface GlobalSettings {
   lastShownAnnouncementId?: string;
   autoApprovalEnabled?: boolean;
@@ -55,6 +62,8 @@ export interface GlobalSettings {
   soundVolume?: number;
   language?: string;
   telemetrySetting?: string;
+  ragEnabled?: boolean;
+  ragSettings?: RagSettings;
   customModes?: CustomMode[];
 }
 

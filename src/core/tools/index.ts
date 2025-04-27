@@ -22,6 +22,8 @@ import { newTaskTool } from "./newTaskTool";
 import { diffFilesTool } from "./diffFilesTool";
 import { insertContentTool } from "./insertContentTool";
 import { useMcpTool, accessMcpResource } from "./mcpTool";
+import { semanticCodeSearchTool } from "./semanticCodeSearchTool";
+import { getSemanticCodeSearchDescription } from "../prompts/tools/semantic-code-search";
 // 工具描述函数
 const getReadFileDescription = (args: any) =>
   `## read_file\nDescription: Read the contents of a file.`;
@@ -96,6 +98,10 @@ export const toolRegistry: ToolRegistry = {
     handler: accessMcpResource,
     description: (args) =>
       `## access_mcp_resource\nDescription: Access a resource from the MCP server.`,
+  },
+  semantic_code_search: {
+    handler: semanticCodeSearchTool,
+    description: getSemanticCodeSearchDescription,
   },
 };
 
