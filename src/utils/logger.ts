@@ -110,7 +110,7 @@ export const logger = {
    * @param message 要输出的消息
    */
   info: (message: any): void => {
-    logWithLevel(message, LogLevel.INFO, chalk.blue);
+    logWithLevel(message, LogLevel.INFO);
   },
 
   /**
