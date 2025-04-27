@@ -61,7 +61,7 @@ function logWithLevel(
   color: (text: string) => string = (text) => text
 ): void {
   // 如果消息级别低于当前级别，则不输出
-  if (level < config.currentLevel && level !== LogLevel.ALWAYS) {
+  if (level < config.currentLevel) {
     return;
   }
 
@@ -75,7 +75,7 @@ function logWithLevel(
 export const logger = {
   /**
    * 设置日志级别
-   * @param level 日志级别（debug, info, warn, error）
+   * @param level 日志级别（debug, info, warn, error, always）
    */
   setLevel: (level: string): void => {
     switch (level.toLowerCase()) {
@@ -91,6 +91,9 @@ export const logger = {
         break;
       case "error":
         setLogLevel(LogLevel.ERROR);
+        break;
+      case "always":
+        setLogLevel(LogLevel.ALWAYS);
         break;
       default:
         setLogLevel(LogLevel.INFO);

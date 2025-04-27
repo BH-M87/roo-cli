@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `--log-level` parameter to control output verbosity
 
   - New `--log-level` command line flag to set the log level
-  - Supports both numeric values (0-4) and named levels (debug, info, success, warn, error)
+  - Supports both numeric values (0-5) and named levels (debug, info, success, warn, error, always)
+  - Added new `always` level that only shows output from `logger.always()` calls
   - Provides fine-grained control over output verbosity
   - Replaces the previous `--verbose` and `--quiet` parameters
   - Useful for scripting and automation where specific output levels are needed

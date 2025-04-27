@@ -51,7 +51,7 @@ program
   .option("-o, --modes-file <path>", "Path to custom modes file")
   .option(
     "--log-level <level>",
-    "Set log level (debug=0, info=1, success=2, warn=3, error=4, or 0-4)",
+    "Set log level (debug=0, info=1, success=2, warn=3, error=4, always=5, or 0-5)",
     "1"
   )
   .option("--continuous", "Enable continuous execution mode")
@@ -95,7 +95,7 @@ program
         // 尝试将日志级别解析为数字
         const logLevelValue = parseInt(options.logLevel, 10);
 
-        if (!isNaN(logLevelValue) && logLevelValue >= 0 && logLevelValue <= 4) {
+        if (!isNaN(logLevelValue) && logLevelValue >= 0 && logLevelValue <= 5) {
           // 如果是有效的数字，直接设置
           setLogLevel(logLevelValue);
         } else {
@@ -189,7 +189,11 @@ program
   .option("--provider-file <path>", "Path to provider profiles file")
   .option("--settings-file <path>", "Path to global settings file")
   .option("--modes-file <path>", "Path to custom modes file")
-  .option("--log-level <level>", "Log level (debug, info, warn, error)", "info")
+  .option(
+    "--log-level <level>",
+    "Log level (debug, info, warn, error, always)",
+    "info"
+  )
   .action(async (name, options) => {
     try {
       // Parse parameters

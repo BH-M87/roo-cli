@@ -185,11 +185,15 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level error
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 4
 
-# 只输出最终结果（抑制中间结果）
-roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-return-last-result
+# 设置日志级别为 always（只显示 logger.always 输出）
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level always
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 5
+
+# 只输出最终结果（抑制中间输出）
+roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-final-output
 
 # 与自动模式结合使用
-roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --auto --only-return-last-result
+roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --auto --only-final-output
 ```
 
 ### 自动模式
