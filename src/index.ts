@@ -62,6 +62,10 @@ program
   )
   .option("--auto", "Enable auto mode (no user confirmation required)")
   .option(
+    "--only-return-last-result",
+    "Only return the last result (suppress intermediate result)"
+  )
+  .option(
     "--api-provider <provider>",
     "API provider to use (anthropic, openai)"
   )
@@ -155,6 +159,7 @@ program
         customInstructions: taskConfig.customInstructions,
         roleDefinition: taskConfig.roleDefinition,
         continueFromTask: options.continueFromTask,
+        onlyReturnLastResult: options.onlyReturnLastResult,
       });
 
       if (result.success) {

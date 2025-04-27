@@ -69,6 +69,7 @@ export async function handleNewTask(params: {
   customInstructions?: string;
   roleDefinition?: string;
   continueFromTask?: string;
+  onlyReturnLastResult?: boolean;
 }): Promise<TaskResult> {
   const {
     prompt,
@@ -83,6 +84,7 @@ export async function handleNewTask(params: {
     customInstructions,
     roleDefinition,
     continueFromTask,
+    onlyReturnLastResult = false,
   } = params;
   const workingDir = getCurrentWorkingDirectory(cwd);
 
@@ -143,7 +145,8 @@ export async function handleNewTask(params: {
         rules,
         customInstructions,
         roleDefinition,
-        taskId
+        taskId,
+        onlyReturnLastResult
       );
 
       // 执行任务
@@ -193,6 +196,7 @@ export async function executeTask(
     logLevel?: string;
     auto?: boolean;
     continueFromTask?: string;
+    onlyReturnLastResult?: boolean;
   }
 ): Promise<TaskResult> {
   return handleNewTask({
@@ -208,5 +212,6 @@ export async function executeTask(
     customInstructions: config.customInstructions,
     roleDefinition: config.roleDefinition,
     continueFromTask: options?.continueFromTask,
+    onlyReturnLastResult: options?.onlyReturnLastResult,
   });
 }

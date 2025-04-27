@@ -34,7 +34,8 @@ export class ContinuousExecutor {
     rules?: string,
     customInstructions?: string,
     roleDefinition?: string,
-    taskId?: string
+    taskId?: string,
+    private onlyReturnLastResult: boolean = false
   ) {
     // 生成系统提示
     this.systemPrompt = generateSystemPrompt(
@@ -80,6 +81,7 @@ export class ContinuousExecutor {
       // 执行步骤
       let currentStep = 0;
       let finalOutput = "";
+      let result;
 
       while (currentStep < this.maxSteps) {
         currentStep++;
@@ -87,7 +89,7 @@ export class ContinuousExecutor {
 
         // 使用单步执行器执行当前步骤
         // 只在第一步添加用户消息
-        const result = (await this.singleStepExecutor.execute(
+        result = (await this.singleStepExecutor.execute(
           currentStep === 1 ? prompt : "", // 只在第一步传入用户提示
           true,
           currentStep === 1 // 只在第一步添加用户消息
@@ -124,7 +126,10 @@ export class ContinuousExecutor {
 
       return {
         taskId: this.taskId!,
-        output: finalOutput,
+        output:
+          this.onlyReturnLastResult && result
+            ? result.response.text
+            : finalOutput,
         success: true,
       };
     } catch (error) {

@@ -184,6 +184,12 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
 # 设置日志级别为 error（最少输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level error
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 4
+
+# 只输出最终结果（抑制中间结果）
+roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-return-last-result
+
+# 与自动模式结合使用
+roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --auto --only-return-last-result
 ```
 
 ### 自动模式

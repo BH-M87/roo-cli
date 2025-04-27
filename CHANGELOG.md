@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `--only-return-last-result` parameter for continuous execution mode
+
+  - New `--only-return-last-result` command line flag to suppress intermediate result
+  - Only return last result of continuous execution
+  - Useful for scripting and automation where only the final result is needed
+  - Works with both continuous and auto modes
+  - Reduces noise in terminal result for long-running tasks
+
 - Added `--log-level` parameter to control output verbosity
 
   - New `--log-level` command line flag to set the log level

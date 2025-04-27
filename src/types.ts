@@ -111,4 +111,5 @@ export interface CommandOptions {
   customInstructions?: string;
   roleDefinition?: string;
   continueFromTask?: string;
+  onlyReturnLastResult?: boolean;
 }

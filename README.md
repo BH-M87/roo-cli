@@ -184,6 +184,12 @@ roo new "Create a simple Node.js HTTP server" --log-level 1
 # Set log level to error (minimal output)
 roo new "Create a simple Node.js HTTP server" --log-level error
 roo new "Create a simple Node.js HTTP server" --log-level 4
+
+# Only return the last result (suppress intermediate result)
+roo new "Create a simple Node.js HTTP server" --continuous --only-return-last-result
+
+# Combine with auto mode
+roo new "Create a simple Node.js HTTP server" --continuous --auto --only-return-last-result
 ```
 
 ### Auto Mode
