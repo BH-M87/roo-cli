@@ -155,6 +155,9 @@ roo new "Write a function to calculate the Fibonacci sequence" --workspace /path
 # Use a custom configuration file
 roo new "Write a function to calculate the Fibonacci sequence" --config-file path/to/config.json
 
+# Read requirements from a file
+roo new --input-file path/to/requirements.txt
+
 # Use OpenAI API
 roo new "Write a function to calculate the Fibonacci sequence" --api-provider openai --openai-api-key your-api-key --openai-base-url https://api.openai.com/v1 --openai-model gpt-4
 

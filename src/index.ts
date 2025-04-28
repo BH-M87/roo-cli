@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import chalk from "chalk";
+import fs from "fs-extra";
 
 import {
   readTaskConfig,
@@ -49,6 +50,10 @@ program
   .option("-p, --provider-file <path>", "Path to provider profiles file")
   .option("-s, --settings-file <path>", "Path to global settings file")
   .option("-o, --modes-file <path>", "Path to custom modes file")
+  .option(
+    "-i, --input-file <path>",
+    "Path to a file containing the prompt/requirements"
+  )
   .option(
     "--log-level <level>",
     "Set log level (debug=0, info=1, success=2, warn=3, error=4, always=5, or 0-5)",
@@ -107,11 +112,39 @@ program
         setLogLevel(LogLevel.INFO);
       }
 
-      // Get prompt from argument or interactive input
-      const prompt = promptArg || options.prompt;
+      // Get prompt from argument, input file, or interactive input
+      let prompt = promptArg || options.prompt;
+
+      // If input file is provided, read prompt from file
+      if (options.inputFile) {
+        try {
+          // 使用 resolveFilePath 确保路径是绝对的
+          const resolvedInputPath = resolveFilePath(options.inputFile);
+          logger.info(`Reading prompt from file: ${resolvedInputPath}`);
+
+          // 读取文件内容
+          const fileContent = await fs.readFile(resolvedInputPath, "utf-8");
+          if (fileContent.trim()) {
+            prompt = fileContent.trim();
+            logger.debug(
+              `Prompt from file: ${prompt.substring(0, 100)}${
+                prompt.length > 100 ? "..." : ""
+              }`
+            );
+          } else {
+            logger.warn(`Input file is empty: ${options.inputFile}`);
+          }
+        } catch (error) {
+          logger.error(`Error reading input file: ${options.inputFile}`);
+          logger.error(error instanceof Error ? error.message : String(error));
+          process.exit(1);
+        }
+      }
 
       if (!prompt) {
-        logger.error("Error: Prompt is required");
+        logger.error(
+          "Error: Prompt is required (provide as argument, --input-file, or --prompt)"
+        );
         process.exit(1);
       }
 

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `--input-file` parameter to read requirements from a file
+
+  - New `--input-file` command line flag to specify a file containing the prompt/requirements
+  - Allows reading complex or lengthy requirements from a text file
+  - Useful for reusing the same requirements across multiple runs
+  - Supports both relative and absolute file paths
+  - Works with all other command line options
+  - Provides detailed error handling for file reading operations
+
 - Added `--only-return-last-result` parameter for continuous execution mode
 
   - New `--only-return-last-result` command line flag to suppress intermediate result
@@ -138,6 +147,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Updated README.md and README.zh-CN.md with information about the `--input-file` parameter
+- Added examples of reading requirements from a file in both English and Chinese documentation
 - Updated README.md and README.zh-CN.md with information about MCP SSE server
 - Added examples of using MCP SSE server with different configurations
 - Updated API server documentation to reflect new endpoints and features

@@ -155,6 +155,9 @@ roo new "编写一个计算斐波那契数列的函数" --workspace /path/to/pro
 # 使用自定义配置文件
 roo new "编写一个计算斐波那契数列的函数" --config-file path/to/config.json
 
+# 从文件读取需求/提示
+roo new --input-file path/to/requirements.txt
+
 # 使用 OpenAI API
 roo new "编写一个计算斐波那契数列的函数" --api-provider openai --openai-api-key your-api-key --openai-base-url https://api.openai.com/v1 --openai-model gpt-4
 
