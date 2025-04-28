@@ -128,7 +128,7 @@ program
             prompt = fileContent.trim();
             logger.debug(
               `Prompt from file: ${prompt.substring(0, 100)}${
-                prompt.length > 100 ? "..." : ""
+                prompt.length > 100 ? `...` : ""
               }`
             );
           } else {

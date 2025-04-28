@@ -116,8 +116,8 @@ export async function handleNewTask(params: {
   logger.info(
     `Custom instructions: ${
       customInstructions
-        ? customInstructions.length > 50
-          ? customInstructions.substring(0, 50) + "..."
+        ? customInstructions.length > 100
+          ? customInstructions.substring(0, 100) + "..."
           : customInstructions
         : "none"
     }`
@@ -125,8 +125,8 @@ export async function handleNewTask(params: {
   logger.info(
     `Role definition: ${
       roleDefinition
-        ? roleDefinition.length > 50
-          ? roleDefinition.substring(0, 50) + "..."
+        ? roleDefinition.length > 100
+          ? roleDefinition.substring(0, 100) + "..."
           : roleDefinition
         : "none"
     }`

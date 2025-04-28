@@ -78,13 +78,7 @@ export class SingleStepExecutor {
 
       // 根据参数决定是否添加用户消息
       if (addUserMessage && prompt) {
-        logger.info(
-          chalk.blue(
-            `Adding user message: ${
-              prompt.length > 50 ? prompt.substring(0, 50) + "..." : prompt
-            }`
-          )
-        );
+        logger.info(chalk.blue(`Adding user message: ${prompt}`));
         this.taskManager.addUserMessage(this.taskId, prompt);
       }
 

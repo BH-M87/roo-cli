@@ -44,11 +44,14 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd }) => {
     if (params.rules) logger.debug(`Rules: ${params.rules}`);
     if (params.custom_instructions)
       logger.debug(
-        `Custom instructions: ${params.custom_instructions.substring(0, 50)}...`
+        `Custom instructions: ${params.custom_instructions.substring(
+          0,
+          100
+        )}...`
       );
     if (params.role_definition)
       logger.debug(
-        `Role definition: ${params.role_definition.substring(0, 50)}...`
+        `Role definition: ${params.role_definition.substring(0, 100)}...`
       );
     if (params.continue_from_task)
       logger.debug(`Continue from task: ${params.continue_from_task}`);
