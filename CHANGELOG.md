@@ -82,9 +82,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This allows defining mode-specific behaviors without having to specify them each time
   - Priority order: command line args > task config > mode settings > defaults
 - Added new `debug` mode
+
   - Specialized mode for analyzing and fixing problems in code
   - Helps identify issues in static code, resolve compilation errors, and troubleshoot runtime exceptions
   - Follows a systematic debugging approach
+
+- Added new `orchestrator` mode
+  - Specialized mode for coordinating complex workflows
+  - Delegates tasks to appropriate specialized modes
+  - Breaks down complex problems into discrete tasks
+  - Tracks and manages progress of all subtasks
+  - Synthesizes results and provides comprehensive overview
+  - Helps users understand how different subtasks fit together
+  - Suggests workflow improvements based on completed subtasks
 
 ### Changed
 
@@ -147,6 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Updated README.md and README.zh-CN.md with information about the new `orchestrator` mode
+- Added examples of using the orchestrator mode for complex workflows
 - Updated README.md and README.zh-CN.md with information about the `--input-file` parameter
 - Added examples of reading requirements from a file in both English and Chinese documentation
 - Updated README.md and README.zh-CN.md with information about MCP SSE server

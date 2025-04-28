@@ -246,6 +246,7 @@ The CLI comes with several built-in modes:
 - **ask**: Mode for answering questions and providing information
 - **test**: Mode specialized for writing and maintaining test suites
 - **debug**: Mode specialized for analyzing and fixing problems in code, including static code issues, compilation errors, and runtime exceptions
+- **orchestrator**: Mode specialized for coordinating complex workflows by delegating tasks to appropriate specialized modes
 
 You can switch between modes using the `--mode` option:
 
@@ -255,6 +256,9 @@ roo new "Fix the error in my Express.js server" --mode debug
 
 # Use test mode for writing tests
 roo new "Write unit tests for my authentication module" --mode test
+
+# Use orchestrator mode for complex workflows
+roo new "Build a complete web application with frontend and backend" --mode orchestrator
 ```
 
 ### Mode-Specific Settings
