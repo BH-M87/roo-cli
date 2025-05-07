@@ -1,8 +1,13 @@
 import { getToolDescriptions } from "./tools"
-import { getToolUseSection } from "./sections/tool-use"
-import { getToolUseGuidelinesSection } from "./sections/tool-use-guidelines"
-import { getCapabilitiesSection } from "./sections/capabilities"
-import { getRulesSection } from "./sections/rules"
+import {
+	getToolUseSection,
+	getToolUseGuidelinesSection,
+	getCapabilitiesSection,
+	getRulesSection,
+	markdownFormattingSection,
+	getObjectiveSection,
+	getModesSection,
+} from "./sections"
 
 /**
  * 生成系统提示
@@ -34,6 +39,8 @@ export function generateSystemPrompt(
 
 	const systemPrompt = `${finalRoleDefinition}${autoModeInstructions}
 
+${markdownFormattingSection()}
+
 ${getToolUseSection()}
 
 ${getToolDescriptions(mode, cwd)}
@@ -43,6 +50,10 @@ ${getToolUseGuidelinesSection()}
 ${getCapabilitiesSection(cwd)}
 
 ${getRulesSection(cwd, rules)}
+
+${getObjectiveSection()}
+
+${getModesSection()}
 
 ${customInstructions ? `\n${customInstructions}` : ""}`
 
