@@ -161,6 +161,9 @@ roo new --input-file path/to/requirements.txt
 # 使用 OpenAI API
 roo new "编写一个计算斐波那契数列的函数" --api-provider openai --openai-api-key your-api-key --openai-base-url https://api.openai.com/v1 --openai-model gpt-4
 
+# 使用 OpenAI API 并启用流模式（某些模型如 Qwen 需要）
+roo new "编写一个计算斐波那契数列的函数" --api-provider openai --openai-api-key your-api-key --openai-model qwen3-235b-a22b --stream-mode
+
 # 使用 Anthropic API
 roo new "编写一个计算斐波那契数列的函数" --api-provider anthropic --anthropic-api-key your-api-key --anthropic-model claude-3-5-sonnet-20241022
 ```

@@ -32,6 +32,7 @@ export interface ApiConfig {
   anthropicApiKey?: string;
   anthropicModelId?: string;
   id?: string;
+  streamMode?: boolean;
 }
 
 export interface GlobalSettings {
@@ -105,6 +106,7 @@ export interface CommandOptions {
   openaiApiKey?: string;
   openaiBaseUrl?: string;
   openaiModel?: string;
+  streamMode?: boolean;
   anthropicApiKey?: string;
   anthropicModel?: string;
   auto?: boolean;

@@ -161,6 +161,9 @@ roo new --input-file path/to/requirements.txt
 # Use OpenAI API
 roo new "Write a function to calculate the Fibonacci sequence" --api-provider openai --openai-api-key your-api-key --openai-base-url https://api.openai.com/v1 --openai-model gpt-4
 
+# Use OpenAI API with stream mode (required for some models like Qwen)
+roo new "Write a function to calculate the Fibonacci sequence" --api-provider openai --openai-api-key your-api-key --openai-model qwen3-235b-a22b --stream-mode
+
 # Use Anthropic API
 roo new "Write a function to calculate the Fibonacci sequence" --api-provider anthropic --anthropic-api-key your-api-key --anthropic-model claude-3-5-sonnet-20241022
 ```

@@ -77,6 +77,7 @@ program
   .option("--openai-api-key <key>", "OpenAI API key")
   .option("--openai-base-url <url>", "OpenAI API base URL")
   .option("--openai-model <model>", "OpenAI model ID")
+  .option("--stream-mode", "Enable stream mode for OpenAI API calls")
   .option("--anthropic-api-key <key>", "Anthropic API key")
   .option("--anthropic-model <model>", "Anthropic model ID")
   .option("--rules <rules>", "Additional rules to supplement the system prompt")
@@ -365,6 +366,7 @@ program
   .option("--openai-api-key <key>", "OpenAI API key")
   .option("--openai-base-url <url>", "OpenAI API base URL")
   .option("--openai-model <model>", "OpenAI model ID")
+  .option("--stream-mode", "Enable stream mode for OpenAI API calls")
   .option("--anthropic-api-key <key>", "Anthropic API key")
   .option("--anthropic-model <model>", "Anthropic model ID")
   .action(async (options) => {
@@ -419,6 +421,7 @@ program
   .option("--openai-api-key <key>", "OpenAI API key")
   .option("--openai-base-url <url>", "OpenAI API base URL")
   .option("--openai-model <model>", "OpenAI model ID")
+  .option("--stream-mode", "Enable stream mode for OpenAI API calls")
   .option("--anthropic-api-key <key>", "Anthropic API key")
   .option("--anthropic-model <model>", "Anthropic model ID")
   .action(async (options) => {

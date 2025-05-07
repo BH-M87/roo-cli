@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `--stream-mode` parameter to enable stream mode for OpenAI API calls
+
+  - New `--stream-mode` command line flag to enable stream mode for OpenAI API calls
+  - Required for some models like Qwen that only support stream mode
+  - Automatically detects models that require stream mode based on model name
+  - Properly handles streamed responses and aggregates them into a single response
+  - Added to all commands that use the OpenAI API
+
 - Added `--input-file` parameter to read requirements from a file
 
   - New `--input-file` command line flag to specify a file containing the prompt/requirements
