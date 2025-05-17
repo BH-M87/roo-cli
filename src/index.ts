@@ -2,9 +2,6 @@
 
 import { Command } from "commander";
 import dotenv from "dotenv";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import chalk from "chalk";
 import fs from "fs-extra";
 
 import {
@@ -16,7 +13,6 @@ import {
 } from "./config/settings";
 import { DEFAULT_TASK_CONFIG } from "./config/constants";
 import { createServer } from "./server";
-import { Provider } from "./core/provider";
 import { handleNewTask } from "./core/task";
 
 import { CommandOptions, TaskConfig } from "./types";
@@ -26,6 +22,7 @@ import { setApiConfig } from "./core/tools/newTaskTool";
 import { getApiConfig } from "./api/config";
 import { VERSION } from "./config/version";
 import { logger, LogLevel, setLogLevel } from "./utils/logger";
+import { Provider } from "./core/provider";
 
 // Load environment variables
 dotenv.config();
@@ -576,3 +573,6 @@ program.parse();
 if (process.argv.length <= 2) {
   program.help();
 }
+
+// Export all library functions and types from exports.ts
+export * from "./exports";

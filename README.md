@@ -1,6 +1,8 @@
 # Roo CLI
 
-A command-line interface for RooCode, allowing you to execute AI tasks from the terminal.
+A command-line interface inspired by RooCode, allowing you to execute AI tasks from the terminal.
+
+Roo CLI can be used both as a command-line tool and as a library in your Node.js applications.
 
 ## Installation
 
@@ -31,6 +33,38 @@ docker-compose build
 ```
 
 ## Usage
+
+### Using as a Library
+
+You can import and use Roo CLI in your Node.js applications:
+
+```typescript
+import { handleNewTask, ApiConfig, ApiProvider } from "roo-cli";
+
+// Define API configuration
+const apiConfig: ApiConfig = {
+  apiProvider: ApiProvider.ANTHROPIC,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  anthropicModelId: "claude-3-5-sonnet-20241022",
+  id: "my-config",
+};
+
+// Execute a task
+async function executeTask() {
+  const result = await handleNewTask({
+    prompt: "Write a function to calculate the Fibonacci sequence",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+  });
+
+  console.log(result.output);
+}
+
+executeTask();
+```
+
+See the `examples/library-usage.ts` file for a more detailed example.
 
 ### Running with Docker
 

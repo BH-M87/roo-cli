@@ -1,6 +1,8 @@
 # Roo CLI
 
-RooCode 的命令行界面，允许你从终端执行 AI 任务。
+参考 RooCode 实现的命令行界面，允许你从终端执行 AI 任务。
+
+Roo CLI 既可以作为命令行工具使用，也可以作为库在 Node.js 应用程序中导入使用。
 
 ## 安装
 
@@ -31,6 +33,38 @@ docker-compose build
 ```
 
 ## 使用
+
+### 作为库使用
+
+你可以在 Node.js 应用程序中导入和使用 Roo CLI：
+
+```typescript
+import { handleNewTask, ApiConfig, ApiProvider } from "roo-cli";
+
+// 定义 API 配置
+const apiConfig: ApiConfig = {
+  apiProvider: ApiProvider.ANTHROPIC,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  anthropicModelId: "claude-3-5-sonnet-20241022",
+  id: "my-config",
+};
+
+// 执行任务
+async function executeTask() {
+  const result = await handleNewTask({
+    prompt: "编写一个计算斐波那契数列的函数",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+  });
+
+  console.log(result.output);
+}
+
+executeTask();
+```
+
+查看 `examples/library-usage.ts` 文件获取更详细的示例。
 
 ### 使用 Docker 运行
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "CLI version of RooCode",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "roo": "dist/index.js"
   },
