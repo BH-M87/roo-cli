@@ -4,18 +4,18 @@
  */
 
 // Core functions
-import { handleNewTask, executeTask } from "./core/task";
+export { handleNewTask, executeTask } from "./core/task";
 
 // Classes
-import { Provider } from "./core/provider";
-import { TaskManager } from "./core/task-manager";
-import { ContinuousExecutor } from "./core/continuous-executor";
-import { SingleStepExecutor } from "./core/single-step-executor";
+export { Provider } from "./core/provider";
+export { TaskManager } from "./core/task-manager";
+export { ContinuousExecutor } from "./core/continuous-executor";
+export { SingleStepExecutor } from "./core/single-step-executor";
 
 // Configuration
-import { getApiConfig, ApiProvider, DEFAULT_CONFIG } from "./api/config";
-import { setApiConfig } from "./core/tools/newTaskTool";
-import {
+export { getApiConfig, ApiProvider, DEFAULT_CONFIG } from "./api/config";
+export { setApiConfig } from "./core/tools/newTaskTool";
+export {
   readTaskConfig,
   readProviderProfiles,
   readGlobalSettings,
@@ -23,10 +23,10 @@ import {
   resolveFilePath,
   getCurrentWorkingDirectory,
 } from "./config/settings";
-import { DEFAULT_TASK_CONFIG } from "./config/constants";
+export { DEFAULT_TASK_CONFIG } from "./config/constants";
 
 // Types
-import {
+export {
   ApiConfig,
   TaskConfig,
   GlobalSettings,
@@ -35,44 +35,4 @@ import {
 } from "./types";
 
 // Logging
-import { logger, LogLevel, setLogLevel } from "./utils/logger";
-
-// Export all
-export {
-  // Core functions
-  handleNewTask,
-  executeTask,
-  
-  // Classes
-  Provider,
-  TaskManager,
-  ContinuousExecutor,
-  SingleStepExecutor,
-  
-  // Configuration
-  getApiConfig,
-  setApiConfig,
-  readTaskConfig,
-  readProviderProfiles,
-  readGlobalSettings,
-  getMergedCustomModes,
-  resolveFilePath,
-  getCurrentWorkingDirectory,
-  
-  // Constants and enums
-  ApiProvider,
-  DEFAULT_CONFIG,
-  DEFAULT_TASK_CONFIG,
-  
-  // Types
-  ApiConfig,
-  TaskConfig,
-  GlobalSettings,
-  ProviderProfile,
-  TaskResult,
-  
-  // Logging
-  logger,
-  LogLevel,
-  setLogLevel,
-};
+export { logger, LogLevel, setLogLevel } from "./utils/logger";
