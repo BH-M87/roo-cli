@@ -78,7 +78,6 @@ export async function handleNewTask(params: {
     cwd,
     continuous = false,
     maxSteps = 100,
-    logLevel = "1", // 默认为 INFO 级别
     auto = false,
     rules,
     customInstructions,
