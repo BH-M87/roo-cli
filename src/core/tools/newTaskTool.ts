@@ -1,7 +1,7 @@
 import { ToolHandler } from "./types";
 import { logger } from "../../utils/logger";
 import { handleNewTask } from "../task";
-import { ApiConfig } from "../../types";
+import { ApiConfig, HandleNewTaskParams } from "../../types";
 
 // 存储 API 配置的全局变量
 let globalApiConfig: ApiConfig | null = null;
@@ -57,7 +57,7 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd }) => {
       logger.debug(`Continue from task: ${params.continue_from_task}`);
 
     // 创建新任务，传递所有参数
-    const result = await handleNewTask({
+    const taskParams: HandleNewTaskParams = {
       prompt,
       mode,
       apiConfig: globalApiConfig,
@@ -71,7 +71,9 @@ export const newTaskTool: ToolHandler = async ({ toolUse, cwd }) => {
       customInstructions: params.custom_instructions,
       roleDefinition: params.role_definition,
       continueFromTask: params.continue_from_task,
-    });
+    };
+
+    const result = await handleNewTask(taskParams);
 
     // 返回结果
     if (result.success) {

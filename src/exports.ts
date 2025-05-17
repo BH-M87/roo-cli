@@ -32,6 +32,7 @@ export {
   GlobalSettings,
   ProviderProfile,
   TaskResult,
+  HandleNewTaskParams,
 } from "./types";
 
 // Logging

@@ -1,4 +1,9 @@
-import { TaskConfig, TaskResult, ApiConfig } from "../types";
+import {
+  TaskConfig,
+  TaskResult,
+  ApiConfig,
+  HandleNewTaskParams,
+} from "../types";
 import { getCurrentWorkingDirectory } from "../config/settings";
 import { generateSystemPrompt } from "./prompts/system";
 import { ContinuousExecutor } from "./continuous-executor";
@@ -56,21 +61,9 @@ function createOrGetTask(
  * @param params Task parameters
  * @returns Task result
  */
-export async function handleNewTask(params: {
-  prompt: string;
-  mode: string;
-  apiConfig: ApiConfig;
-  cwd?: string;
-  continuous?: boolean;
-  maxSteps?: number;
-  logLevel?: string;
-  auto?: boolean;
-  rules?: string;
-  customInstructions?: string;
-  roleDefinition?: string;
-  continueFromTask?: string;
-  onlyReturnLastResult?: boolean;
-}): Promise<TaskResult> {
+export async function handleNewTask(
+  params: HandleNewTaskParams
+): Promise<TaskResult> {
   const {
     prompt,
     mode,

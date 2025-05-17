@@ -75,6 +75,38 @@ export interface TaskResult {
   error?: string;
 }
 
+/**
+ * 处理新任务的参数类型
+ */
+export interface HandleNewTaskParams {
+  /** 提示信息 */
+  prompt: string;
+  /** 模式 */
+  mode: string;
+  /** API配置 */
+  apiConfig: ApiConfig;
+  /** 工作目录 */
+  cwd?: string;
+  /** 是否连续执行 */
+  continuous?: boolean;
+  /** 最大步骤数 */
+  maxSteps?: number;
+  /** 日志级别 */
+  logLevel?: string;
+  /** 是否自动模式 */
+  auto?: boolean;
+  /** 规则 */
+  rules?: string;
+  /** 自定义指令 */
+  customInstructions?: string;
+  /** 角色定义 */
+  roleDefinition?: string;
+  /** 继续执行的任务ID */
+  continueFromTask?: string;
+  /** 是否只返回最后一个结果 */
+  onlyReturnLastResult?: boolean;
+}
+
 export interface ApiResponse {
   text: string;
   usage?: {
