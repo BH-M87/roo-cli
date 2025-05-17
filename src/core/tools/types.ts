@@ -106,6 +106,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
       "search_files",
       "list_files",
       "list_code_definition_names",
+      "semantic_code_search",
     ],
   },
   edit: {
