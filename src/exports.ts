@@ -33,6 +33,7 @@ export {
   ProviderProfile,
   TaskResult,
   HandleNewTaskParams,
+  CommandOptions,
 } from "./types";
 
 // Logging
