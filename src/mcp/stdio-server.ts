@@ -109,11 +109,11 @@ export class McpStdioServer extends EventEmitter {
         this.settings,
         this.customModes
       );
-      logger.success(`Provider initialized with ${this.apiConfig.apiProvider}`);
-    } else {
-      logger.warn(
-        "Provider not initialized, waiting for configuration message"
+      logger.progress(
+        `Provider initialized with ${this.apiConfig.apiProvider}`
       );
+    } else {
+      logger.progress("Waiting for configuration...");
     }
   }
 
@@ -227,7 +227,7 @@ export class McpStdioServer extends EventEmitter {
    */
   async start(): Promise<boolean> {
     if (this.isRunning) {
-      logger.info("MCP Stdio server is already running");
+      logger.progress("MCP Stdio server is already running");
       return true;
     }
 
@@ -262,7 +262,7 @@ export class McpStdioServer extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     if (!this.isRunning) {
-      logger.info("MCP Stdio server is not running");
+      logger.progress("MCP Stdio server is not running");
       return true;
     }
 

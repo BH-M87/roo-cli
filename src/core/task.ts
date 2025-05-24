@@ -38,7 +38,7 @@ function createOrGetTask(
   // 如果继续执行任务
   if (continueFromTask) {
     taskId = continueFromTask;
-    logger.info(`Continuing from task: ${continueFromTask}`);
+    logger.progress(`Continuing from task: ${continueFromTask}`);
 
     // 验证任务是否存在
     const task = taskManager.getTask(continueFromTask);
@@ -46,11 +46,11 @@ function createOrGetTask(
       throw new Error(`Task ${continueFromTask} not found`);
     }
 
-    logger.info(`Task found with ${task.messages.length} messages`);
+    logger.debug(`Task found with ${task.messages.length} messages`);
   } else {
     // 创建新任务
     taskId = taskManager.createTask(mode, workingDir, systemPrompt);
-    logger.info(`Created new task: ${taskId}`);
+    logger.progress(`Created new task: ${taskId}`);
   }
 
   return { taskId, taskManager };
@@ -98,10 +98,20 @@ export async function handleNewTask(
     continueFromTask
   );
 
-  // 输出任务信息
-  logger.info(`Starting task (${taskId}) in ${mode} mode`);
-  logger.info(`Working directory: ${workingDir}`);
-  logger.info(`Prompt: ${prompt}`);
+  // 输出任务概要信息
+  const modeText = continuous || auto ? "continuous" : "single-step";
+  const autoText = auto ? " (auto)" : "";
+  logger.progress(`Starting task - ${modeText}${autoText} mode`);
+  logger.progress(`Working directory: ${workingDir}`);
+  logger.progress(
+    `Task prompt: ${
+      prompt.length > 80 ? prompt.substring(0, 80) + "..." : prompt
+    }`
+  );
+
+  // 详细配置信息放到 info 级别
+  logger.info(`Task ID: ${taskId}`);
+  logger.info(`Mode: ${mode}`);
   logger.info(`Continuous mode: ${continuous ? "enabled" : "disabled"}`);
   logger.info(`Auto mode: ${auto ? "enabled" : "disabled"}`);
   logger.info(`Rules: ${rules || "none"}`);

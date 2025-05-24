@@ -35,6 +35,8 @@ export class ToolExecutor {
     };
 
     // 执行工具
-    return executeTool(toolUse, this.cwd);
+    const result = await executeTool(toolUse, this.cwd);
+    logger.debug(`Tool ${name} execution completed`);
+    return result;
   }
 }

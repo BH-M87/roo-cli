@@ -254,7 +254,7 @@ export class McpSseServer extends EventEmitter {
    */
   async start(): Promise<boolean> {
     if (this.isRunning) {
-      logger.info("MCP server is already running");
+      logger.progress("MCP SSE server is already running");
       return true;
     }
 
@@ -316,7 +316,7 @@ export class McpSseServer extends EventEmitter {
             return res.status(500).send("MCP server not initialized");
           }
 
-          logger.info("Client connected to SSE endpoint");
+          logger.progress("Client connected to SSE endpoint");
 
           // 创建 SSE 传输
           this.currentTransport = new SSEServerTransport("/messages", res);
@@ -339,7 +339,7 @@ export class McpSseServer extends EventEmitter {
 
           // 处理连接关闭
           req.on("close", () => {
-            logger.info("Client disconnected from SSE endpoint");
+            logger.progress("Client disconnected from SSE endpoint");
             // 清除传输
             this.currentTransport = null;
           });
@@ -395,8 +395,8 @@ export class McpSseServer extends EventEmitter {
         const serverUrl = `http://localhost:${this.port}`;
         setMcpServerUrl(serverUrl);
 
-        logger.info(`SSE endpoint available at ${serverUrl}/sse`);
-        logger.info(`Messages endpoint available at ${serverUrl}/messages`);
+        logger.progress(`SSE endpoint available at ${serverUrl}/sse`);
+        logger.progress(`Messages endpoint available at ${serverUrl}/messages`);
 
         this.emit("started", { port: this.port, url: serverUrl });
       });
@@ -418,7 +418,7 @@ export class McpSseServer extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     if (!this.isRunning) {
-      logger.info("MCP server is not running");
+      logger.progress("MCP SSE server is not running");
       return true;
     }
 
@@ -438,7 +438,7 @@ export class McpSseServer extends EventEmitter {
       this.isRunning = false;
       setMcpServerUrl(null);
 
-      logger.success("MCP server stopped");
+      logger.success("MCP SSE server stopped");
       this.emit("stopped");
 
       return true;

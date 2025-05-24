@@ -16,11 +16,12 @@ import chalk from "chalk";
 // 日志级别
 export enum LogLevel {
   DEBUG = 0, // 调试级别，最详细
-  INFO = 1, // 信息级别，一般信息
-  SUCCESS = 2, // 成功级别，成功信息
-  WARN = 3, // 警告级别，警告信息
-  ERROR = 4, // 错误级别，错误信息
-  ALWAYS = 5, // 始终显示，不受日志级别控制
+  PROGRESS = 1, // 进度级别，任务执行进度和状态
+  INFO = 2, // 信息级别，一般信息
+  SUCCESS = 3, // 成功级别，成功信息
+  WARN = 4, // 警告级别，警告信息
+  ERROR = 5, // 错误级别，错误信息
+  ALWAYS = 6, // 始终显示，不受日志级别控制
 }
 
 // 日志配置
@@ -30,7 +31,7 @@ interface LogConfig {
 
 // 默认配置
 const config: LogConfig = {
-  currentLevel: LogLevel.INFO, // 默认为信息级别
+  currentLevel: LogLevel.PROGRESS, // 默认为进度级别，只显示关键进度信息
 };
 
 /**
@@ -75,12 +76,15 @@ function logWithLevel(
 export const logger = {
   /**
    * 设置日志级别
-   * @param level 日志级别（debug, info, warn, error, always）
+   * @param level 日志级别（debug, info, progress, warn, error, always）
    */
   setLevel: (level: string): void => {
     switch (level.toLowerCase()) {
       case "debug":
         setLogLevel(LogLevel.DEBUG);
+        break;
+      case "progress":
+        setLogLevel(LogLevel.PROGRESS);
         break;
       case "info":
         setLogLevel(LogLevel.INFO);
@@ -96,7 +100,7 @@ export const logger = {
         setLogLevel(LogLevel.ALWAYS);
         break;
       default:
-        setLogLevel(LogLevel.INFO);
+        setLogLevel(LogLevel.PROGRESS);
     }
   },
 
@@ -109,7 +113,15 @@ export const logger = {
   },
 
   /**
-   * 信息日志，在非安静模式下显示
+   * 进度日志，显示任务执行的关键进度和状态
+   * @param message 要输出的消息
+   */
+  progress: (message: any): void => {
+    logWithLevel(message, LogLevel.PROGRESS, chalk.blue);
+  },
+
+  /**
+   * 信息日志，显示详细信息
    * @param message 要输出的消息
    */
   info: (message: any): void => {
@@ -117,7 +129,7 @@ export const logger = {
   },
 
   /**
-   * 成功日志，在非安静模式下显示
+   * 成功日志，显示成功信息
    * @param message 要输出的消息
    */
   success: (message: any): void => {

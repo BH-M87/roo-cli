@@ -434,13 +434,15 @@ program
       if (success) {
         const status = await server.getStatus();
         logger.success(`MCP SSE server started successfully at ${status.url}`);
-        logger.info(`SSE endpoint available at ${status.url}/sse`);
-        logger.info(`Messages endpoint available at ${status.url}/messages`);
-        logger.info("Press Ctrl+C to stop the server");
+        logger.progress(`SSE endpoint available at ${status.url}/sse`);
+        logger.progress(
+          `Messages endpoint available at ${status.url}/messages`
+        );
+        logger.progress("Press Ctrl+C to stop the server");
 
         // Keep the process running until it's terminated
         process.on("SIGINT", async () => {
-          logger.info("Shutting down MCP SSE server...");
+          logger.progress("Shutting down MCP SSE server...");
           await server.stop();
           logger.success("MCP SSE server stopped");
           process.exit(0);

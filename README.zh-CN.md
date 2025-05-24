@@ -213,21 +213,25 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --continuous
 # 指定最大步骤数
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --max-steps 5
 
-# 设置日志级别 (debug=0, info=1, success=2, warn=3, error=4)
+# 设置日志级别 (debug=0, progress=1, info=2, success=3, warn=4, error=5)
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level debug
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 0
 
-# 设置日志级别为 info（默认）
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level info
+# 设置日志级别为 progress（默认）
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level progress
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
+
+# 设置日志级别为 info（显示详细信息）
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level info
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 2
 
 # 设置日志级别为 error（最少输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level error
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 4
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 5
 
 # 设置日志级别为 always（只显示 logger.always 输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level always
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 5
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 6
 
 # 只输出最终结果（抑制中间输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-final-output
@@ -321,17 +325,53 @@ roo tools --mode code
 # 执行工具
 roo tool read_file --params '{"path": "src/index.js"}'
 
-# 执行工具并使用调试日志级别
+# 执行工具并使用调试日志级别（显示所有日志）
 roo tool execute_command --params '{"command": "ls -la"}' --log-level debug
 
 # 在特定目录中执行工具
 roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to/directory
 
-# 使用 info 日志级别执行工具（默认）
+# 使用 info 日志级别执行工具（显示详细信息）
 roo tool read_file --params '{"path": "src/index.js"}' --log-level info
+
+# 使用 progress 日志级别执行工具（默认，显示关键进度）
+roo tool read_file --params '{"path": "src/index.js"}' --log-level progress
 
 # 使用 error 日志级别执行工具（最少输出）
 roo tool read_file --params '{"path": "src/index.js"}' --log-level error
+```
+
+### 日志级别说明
+
+Roo CLI 支持多种日志级别，帮助您控制输出的详细程度：
+
+- **debug**: 显示所有日志信息，包括调试细节
+- **progress** (默认): 显示关键的任务执行进度和状态（包含 info 级别的所有信息）
+- **info**: 显示详细的信息日志，包括技术细节
+- **success**: 只显示成功信息
+- **warn**: 只显示警告和更高级别的信息
+- **error**: 只显示错误信息
+- **always**: 显示标记为始终显示的重要信息
+
+**推荐使用**：
+
+- 日常使用：`progress` (默认) - 获得清晰的进度概览，包含所有重要信息
+- 简化输出：`info` - 只显示技术细节，不显示进度信息
+- 调试问题：`debug` - 查看最完整的执行细节
+- 自动化脚本：`error` - 只关注错误信息
+
+```bash
+# 使用默认的 progress 级别
+roo new "创建一个 React 组件"
+
+# 只显示技术细节（不显示进度信息）
+roo new "创建一个 React 组件" --log-level info
+
+# 查看最详细的执行过程
+roo new "创建一个 React 组件" --log-level debug
+
+# 只显示错误（适合脚本使用）
+roo new "创建一个 React 组件" --log-level error
 ```
 
 ### MCP 服务器

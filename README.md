@@ -321,17 +321,53 @@ roo tools --mode code
 # Execute a tool
 roo tool read_file --params '{"path": "src/index.js"}'
 
-# Execute a tool with debug log level
+# Execute a tool with debug log level (shows all logs)
 roo tool execute_command --params '{"command": "ls -la"}' --log-level debug
 
 # Execute a tool in a specific directory
 roo tool list_files --params '{"path": ".", "recursive": "true"}' --cwd /path/to/directory
 
-# Execute a tool with info log level (default)
+# Execute a tool with info log level (shows detailed information)
 roo tool read_file --params '{"path": "src/index.js"}' --log-level info
+
+# Execute a tool with progress log level (default, shows key progress)
+roo tool read_file --params '{"path": "src/index.js"}' --log-level progress
 
 # Execute a tool with error log level (minimal output)
 roo tool read_file --params '{"path": "src/index.js"}' --log-level error
+```
+
+### Log Levels
+
+Roo CLI supports multiple log levels to help you control output verbosity:
+
+- **debug**: Shows all log information, including debugging details
+- **progress** (default): Shows key task execution progress and status (includes all info level messages)
+- **info**: Shows detailed information logs, including technical details
+- **success**: Shows only success messages
+- **warn**: Shows only warnings and higher level messages
+- **error**: Shows only error messages
+- **always**: Shows messages marked as always visible
+
+**Recommended usage**:
+
+- Daily use: `progress` (default) - Get clear progress overview with all important information
+- Simplified output: `info` - Show only technical details without progress information
+- Debugging: `debug` - View the most complete execution details
+- Automation scripts: `error` - Focus only on error messages
+
+```bash
+# Use default progress level
+roo new "Create a React component"
+
+# Show only technical details (no progress information)
+roo new "Create a React component" --log-level info
+
+# View the most detailed execution process
+roo new "Create a React component" --log-level debug
+
+# Show only errors (suitable for scripts)
+roo new "Create a React component" --log-level error
 ```
 
 ### MCP Server

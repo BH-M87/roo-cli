@@ -72,11 +72,12 @@ export class ContinuousExecutor {
         throw new Error("Task ID is required");
       }
 
-      // 打印任务信息
-      logger.info(`Starting continuous execution (${this.taskId})`);
-      logger.info(`Maximum steps: ${this.maxSteps}`);
-      logger.info(`Initial prompt: ${prompt}`);
-      logger.info("");
+      // 打印任务执行概要
+      logger.progress(
+        `Starting continuous execution (max steps: ${this.maxSteps})`
+      );
+      logger.debug(`Task ID: ${this.taskId}`);
+      logger.debug(`Initial prompt: ${prompt}`);
 
       // 执行步骤
       let currentStep = 0;
@@ -85,7 +86,7 @@ export class ContinuousExecutor {
 
       while (currentStep < this.maxSteps) {
         currentStep++;
-        logger.info(chalk.yellow(`Step ${currentStep}/${this.maxSteps}`));
+        logger.progress(`Executing step ${currentStep}/${this.maxSteps}`);
 
         // 使用单步执行器执行当前步骤
         // 只在第一步添加用户消息
@@ -95,23 +96,24 @@ export class ContinuousExecutor {
           currentStep === 1 // 只在第一步添加用户消息
         )) as { response: any; toolResult?: string };
 
-        // 打印助手响应
-        logger.info(chalk.cyan("Assistant:"));
-        logger.info(result.response.text);
-        logger.info("");
-
         // 检查是否有工具调用
         if (result.toolResult) {
-          // 打印工具结果
+          // 显示工具执行概要
+          logger.progress(`Tool execution completed`);
+
+          // 详细信息放到 info 级别
+          logger.info(chalk.cyan("Assistant Response:"));
+          logger.info(result.response.text);
           logger.info(chalk.magenta("Tool Result:"));
           logger.info(result.toolResult);
-          logger.info("");
 
           // 更新输出
           finalOutput += `${result.response.text}\n\nTool Result:\n${result.toolResult}\n\n`;
         } else {
           // 没有工具调用，任务完成
           logger.success("Task completed without tool calls");
+          logger.info("Final Response:");
+          logger.info(result.response.text);
           finalOutput += result.response.text;
           break;
         }

@@ -70,20 +70,22 @@ export class SingleStepExecutor {
         throw new Error(`Task ${this.taskId} not found`);
       }
 
-      logger.info(chalk.blue(`Using task: ${this.taskId}`));
-      logger.info(chalk.blue(`Task has ${task.messages.length} messages`));
+      logger.debug(`Using task: ${this.taskId}`);
+      logger.debug(`Task has ${task.messages.length} messages`);
 
       // 创建API处理程序
       const apiHandler = createApiHandler(this.apiConfig);
 
       // 根据参数决定是否添加用户消息
       if (addUserMessage && prompt) {
-        logger.info(chalk.blue(`Adding user message: ${prompt}`));
+        logger.debug(`Adding user message: ${prompt}`);
         this.taskManager.addUserMessage(this.taskId, prompt);
       }
 
       // 发送请求到 API
-      logger.info(`Sending request to ${this.apiConfig.apiProvider} API...`);
+      logger.progress(
+        `Sending request to ${this.apiConfig.apiProvider} API...`
+      );
       const messages = this.taskManager.getMessages(this.taskId);
       const response = await apiHandler.sendRequest(
         "",
@@ -96,14 +98,14 @@ export class SingleStepExecutor {
 
       // 检查是否有工具调用
       if (response.toolCalls && response.toolCalls.length > 0) {
-        logger.info(`Found ${response.toolCalls.length} tool call(s)`);
+        logger.progress(`Found ${response.toolCalls.length} tool call(s)`);
 
         // 执行工具调用
         const toolCall = response.toolCalls[0]; // 只处理第一个工具调用
-        logger.info(`Executing tool: ${toolCall.name}`);
+        logger.progress(`Executing tool: ${toolCall.name}`);
 
         const toolResult = await this.toolExecutor.execute(toolCall);
-        logger.info(`Tool execution completed`);
+        logger.debug(`Tool execution completed`);
 
         // 添加工具消息
         this.taskManager.addToolMessage(this.taskId, toolResult);

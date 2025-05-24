@@ -182,7 +182,7 @@ export async function executeTool(
 
     const result = await handler({ toolUse, cwd });
 
-    logger.debug(`Tool execution completed`);
+    logger.debug(`Tool ${name} execution completed`);
 
     // 返回结果
     if (typeof result === "string") {
