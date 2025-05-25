@@ -61,10 +61,52 @@ async function executeTask() {
   console.log(result.output);
 }
 
+// Execute a task with structured output
+async function executeTaskWithStructuredOutput() {
+  const result = await handleNewTask({
+    prompt: "Create a simple web server",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+    continuous: true,
+    structuredOutput: true,
+    onStructuredUpdate: (data) => {
+      console.log(`Progress: ${data.progress.percentage}%`);
+      console.log(
+        `Current step: ${data.progress.currentStep}/${data.progress.totalSteps}`
+      );
+    },
+  });
+
+  if (result.structured) {
+    console.log("Execution completed!");
+    console.log(`Total steps: ${result.structured.steps.length}`);
+    console.log(`Total tool calls: ${result.structured.stats.totalToolCalls}`);
+    console.log(
+      `Average step time: ${result.structured.stats.averageStepTime}ms`
+    );
+  }
+}
+
+// Execute a task with file output
+async function executeTaskWithFileOutput() {
+  const result = await handleNewTask({
+    prompt: "Build a complete application",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+    continuous: true,
+    structuredOutput: "./execution-log.json",
+  });
+
+  console.log(`Task completed: ${result.success}`);
+  console.log("Detailed execution log saved to: ./execution-log.json");
+}
+
 executeTask();
 ```
 
-See the `examples/library-usage.ts` file for a more detailed example.
+See the `examples/library-usage.ts` and `examples/structured-output-example.js` files for more detailed examples.
 
 ### Running with Docker
 
@@ -235,6 +277,124 @@ roo new "Create a simple Node.js HTTP server" --continuous --only-final-output
 # Combine with auto mode
 roo new "Create a simple Node.js HTTP server" --continuous --auto --only-final-output
 ```
+
+### Structured Output
+
+Roo CLI provides structured output functionality that allows you to get detailed execution information in JSON format, including progress, steps, logs, and statistics. This is particularly useful for monitoring, analysis, and integration with other systems.
+
+#### Console Output Mode
+
+```bash
+# Enable structured output to console
+roo new "Create a simple calculator" --structured-output
+
+# Combine with continuous execution
+roo new "Build a web application" --continuous --structured-output
+
+# View real-time updates in debug mode
+roo new "Complex task" --structured-output --log-level debug
+```
+
+#### File Output Mode
+
+```bash
+# Output structured data to a file
+roo new "Create a Node.js project" --structured-output ./output.json
+
+# Continuous execution with file output
+roo new "Build and test application" --continuous --structured-output ./execution-log.json
+
+# Specify custom file path
+roo new "Data analysis task" --structured-output /path/to/results/analysis.json
+```
+
+#### Structured Output Format
+
+When using file output mode, the JSON file contains comprehensive execution information:
+
+```json
+{
+  "status": "completed",
+  "completedTime": 1748109166390,
+  "structured": {
+    "task": {
+      "id": "task-uuid",
+      "mode": "code",
+      "cwd": "/working/directory",
+      "startTime": 1748109156158,
+      "endTime": 1748109166390,
+      "duration": 10232
+    },
+    "config": {
+      "continuous": true,
+      "maxSteps": 100,
+      "auto": false,
+      "onlyReturnLastResult": false
+    },
+    "progress": {
+      "currentStep": 3,
+      "totalSteps": 100,
+      "status": "completed",
+      "percentage": 100
+    },
+    "steps": [
+      {
+        "stepNumber": 1,
+        "startTime": 1748109156158,
+        "endTime": 1748109166389,
+        "duration": 10231,
+        "status": "completed",
+        "aiResponse": {
+          "text": "AI response content...",
+          "toolCalls": [...],
+          "usage": {
+            "promptTokens": 150,
+            "completionTokens": 80,
+            "totalTokens": 230
+          }
+        },
+        "toolResults": [
+          {
+            "toolName": "write_to_file",
+            "params": {...},
+            "result": "File created successfully",
+            "success": true,
+            "duration": 50
+          }
+        ],
+        "output": "Step output content..."
+      }
+    ],
+    "logs": [
+      {
+        "timestamp": 1748109156158,
+        "level": "progress",
+        "message": "Executing step 1/3",
+        "stepNumber": 1
+      }
+    ],
+    "finalOutput": "Task completion summary...",
+    "stats": {
+      "totalToolCalls": 5,
+      "totalTokensUsed": 1250,
+      "averageStepTime": 8500
+    }
+  },
+  "result": {
+    "success": true,
+    "taskId": "task-uuid",
+    "output": "Final task output..."
+  }
+}
+```
+
+#### Use Cases
+
+- **Monitoring**: Track long-running tasks with real-time progress updates
+- **Analysis**: Analyze execution patterns and performance metrics
+- **Integration**: Feed execution data into other systems or dashboards
+- **Debugging**: Detailed step-by-step execution information for troubleshooting
+- **Reporting**: Generate comprehensive execution reports
 
 ### Auto Mode
 
@@ -584,11 +744,32 @@ The server now supports CORS, allowing cross-origin requests from web applicatio
 ### Example: Execute a Task
 
 ```bash
+# Basic task execution
 curl -X POST http://localhost:3000/api/task \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Write a function to calculate the Fibonacci sequence",
     "mode": "code"
+  }'
+
+# Task execution with structured output
+curl -X POST http://localhost:3000/api/task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Create a web application",
+    "mode": "code",
+    "continuous": true,
+    "structuredOutput": true
+  }'
+
+# Task execution with file output
+curl -X POST http://localhost:3000/api/task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Build and test application",
+    "mode": "code",
+    "continuous": true,
+    "structuredOutput": "./api-execution-log.json"
   }'
 ```
 

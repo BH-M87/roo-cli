@@ -61,10 +61,50 @@ async function executeTask() {
   console.log(result.output);
 }
 
+// 执行带结构化输出的任务
+async function executeTaskWithStructuredOutput() {
+  const result = await handleNewTask({
+    prompt: "创建一个简单的 Web 服务器",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+    continuous: true,
+    structuredOutput: true,
+    onStructuredUpdate: (data) => {
+      console.log(`进度: ${data.progress.percentage}%`);
+      console.log(
+        `当前步骤: ${data.progress.currentStep}/${data.progress.totalSteps}`
+      );
+    },
+  });
+
+  if (result.structured) {
+    console.log("执行完成！");
+    console.log(`总步骤数: ${result.structured.steps.length}`);
+    console.log(`总工具调用: ${result.structured.stats.totalToolCalls}`);
+    console.log(`平均步骤时间: ${result.structured.stats.averageStepTime}ms`);
+  }
+}
+
+// 执行带文件输出的任务
+async function executeTaskWithFileOutput() {
+  const result = await handleNewTask({
+    prompt: "构建一个完整的应用程序",
+    mode: "code",
+    apiConfig,
+    cwd: process.cwd(),
+    continuous: true,
+    structuredOutput: "./execution-log.json",
+  });
+
+  console.log(`任务完成: ${result.success}`);
+  console.log("详细执行日志已保存到: ./execution-log.json");
+}
+
 executeTask();
 ```
 
-查看 `examples/library-usage.ts` 文件获取更详细的示例。
+查看 `examples/library-usage.ts` 和 `examples/structured-output-example.js` 文件获取更详细的示例。
 
 ### 使用 Docker 运行
 
@@ -239,6 +279,124 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-final
 # 与自动模式结合使用
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --auto --only-final-output
 ```
+
+### 结构化输出
+
+Roo CLI 提供结构化输出功能，允许您获取详细的执行信息，包括进度、步骤、日志和统计数据的 JSON 格式输出。这对于监控、分析和与其他系统集成特别有用。
+
+#### 控制台输出模式
+
+```bash
+# 启用结构化输出到控制台
+roo new "创建一个简单的计算器" --structured-output
+
+# 结合连续执行模式
+roo new "构建一个 Web 应用程序" --continuous --structured-output
+
+# 在调试模式下查看实时更新
+roo new "复杂任务" --structured-output --log-level debug
+```
+
+#### 文件输出模式
+
+```bash
+# 输出结构化数据到文件
+roo new "创建一个 Node.js 项目" --structured-output ./output.json
+
+# 连续执行模式配合文件输出
+roo new "构建和测试应用程序" --continuous --structured-output ./execution-log.json
+
+# 指定自定义文件路径
+roo new "数据分析任务" --structured-output /path/to/results/analysis.json
+```
+
+#### 结构化输出格式
+
+使用文件输出模式时，JSON 文件包含全面的执行信息：
+
+```json
+{
+  "status": "completed",
+  "completedTime": 1748109166390,
+  "structured": {
+    "task": {
+      "id": "任务-uuid",
+      "mode": "code",
+      "cwd": "/工作目录",
+      "startTime": 1748109156158,
+      "endTime": 1748109166390,
+      "duration": 10232
+    },
+    "config": {
+      "continuous": true,
+      "maxSteps": 100,
+      "auto": false,
+      "onlyReturnLastResult": false
+    },
+    "progress": {
+      "currentStep": 3,
+      "totalSteps": 100,
+      "status": "completed",
+      "percentage": 100
+    },
+    "steps": [
+      {
+        "stepNumber": 1,
+        "startTime": 1748109156158,
+        "endTime": 1748109166389,
+        "duration": 10231,
+        "status": "completed",
+        "aiResponse": {
+          "text": "AI 响应内容...",
+          "toolCalls": [...],
+          "usage": {
+            "promptTokens": 150,
+            "completionTokens": 80,
+            "totalTokens": 230
+          }
+        },
+        "toolResults": [
+          {
+            "toolName": "write_to_file",
+            "params": {...},
+            "result": "文件创建成功",
+            "success": true,
+            "duration": 50
+          }
+        ],
+        "output": "步骤输出内容..."
+      }
+    ],
+    "logs": [
+      {
+        "timestamp": 1748109156158,
+        "level": "progress",
+        "message": "执行步骤 1/3",
+        "stepNumber": 1
+      }
+    ],
+    "finalOutput": "任务完成摘要...",
+    "stats": {
+      "totalToolCalls": 5,
+      "totalTokensUsed": 1250,
+      "averageStepTime": 8500
+    }
+  },
+  "result": {
+    "success": true,
+    "taskId": "任务-uuid",
+    "output": "最终任务输出..."
+  }
+}
+```
+
+#### 使用场景
+
+- **监控**: 实时跟踪长时间运行任务的进度更新
+- **分析**: 分析执行模式和性能指标
+- **集成**: 将执行数据输入到其他系统或仪表板
+- **调试**: 详细的逐步执行信息用于故障排除
+- **报告**: 生成全面的执行报告
 
 ### 自动模式
 
@@ -588,11 +746,32 @@ CLI 使用多个配置文件：
 ### 示例：执行任务
 
 ```bash
+# 基本任务执行
 curl -X POST http://localhost:3000/api/task \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "编写一个计算斐波那契数列的函数",
     "mode": "code"
+  }'
+
+# 带结构化输出的任务执行
+curl -X POST http://localhost:3000/api/task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "创建一个 Web 应用程序",
+    "mode": "code",
+    "continuous": true,
+    "structuredOutput": true
+  }'
+
+# 带文件输出的任务执行
+curl -X POST http://localhost:3000/api/task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "构建和测试应用程序",
+    "mode": "code",
+    "continuous": true,
+    "structuredOutput": "./api-execution-log.json"
   }'
 ```
 

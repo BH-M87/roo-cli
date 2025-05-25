@@ -23,6 +23,7 @@ import { getApiConfig } from "./api/config";
 import { VERSION } from "./config/version";
 import { logger, LogLevel, setLogLevel } from "./utils/logger";
 import { Provider } from "./core/provider";
+import { parseStructuredOutputOption } from "./utils/file-output-manager";
 
 // Load environment variables
 dotenv.config();
@@ -91,6 +92,10 @@ program
   .on("option:continue-from-task", function (this: Command, val: string) {
     this.opts().continueFromTask = val;
   })
+  .option(
+    "--structured-output [path]",
+    "Enable structured JSON output with detailed execution information. If path is provided, output to file instead of console"
+  )
   .action(async (promptArg, options: CommandOptions) => {
     try {
       // 设置日志级别
@@ -191,17 +196,80 @@ program
         roleDefinition: taskConfig.roleDefinition,
         continueFromTask: options.continueFromTask,
         onlyReturnLastResult: options.onlyReturnLastResult,
+        structuredOutput: options.structuredOutput,
+        onStructuredUpdate: options.structuredOutput
+          ? (data) => {
+              // 解析结构化输出选项
+              const structuredConfig = parseStructuredOutputOption(
+                options.structuredOutput
+              );
+
+              // 如果是控制台输出模式且启用了调试，则输出到控制台
+              if (!structuredConfig.filePath && options.logLevel === "debug") {
+                logger.debug(
+                  "Structured update: " + JSON.stringify(data, null, 2)
+                );
+              }
+              // 文件输出由 task.ts 中的 fileOutputManager 处理
+            }
+          : undefined,
       });
 
+      // 解析结构化输出选项
+      const structuredConfig = parseStructuredOutputOption(
+        options.structuredOutput
+      );
+
       if (result.success) {
-        // 输出结果
-        logger.always("\n" + result.output + "\n");
-        logger.success("Task completed successfully");
-        logger.success(`Task ID: ${result.taskId}`);
+        if (structuredConfig.enabled) {
+          if (structuredConfig.filePath) {
+            // 文件输出模式 - 只显示简单的成功消息和文件路径
+            logger.success("Task completed successfully");
+            logger.success(`Task ID: ${result.taskId}`);
+            logger.success(
+              `Structured output written to: ${structuredConfig.filePath}`
+            );
+          } else {
+            // 控制台输出模式 - 输出完整的结构化JSON结果
+            const structuredResult = {
+              success: result.success,
+              taskId: result.taskId,
+              output: result.output,
+              structured: result.structured,
+            };
+            console.log(JSON.stringify(structuredResult, null, 2));
+          }
+        } else {
+          // 输出常规结果
+          logger.always("\n" + result.output + "\n");
+          logger.success("Task completed successfully");
+          logger.success(`Task ID: ${result.taskId}`);
+        }
       } else {
-        // 输出错误
-        logger.error(`Task failed: ${result.error}`);
-        logger.error(`Task ID: ${result.taskId}`);
+        if (structuredConfig.enabled) {
+          if (structuredConfig.filePath) {
+            // 文件输出模式 - 只显示简单的错误消息和文件路径
+            logger.error(`Task failed: ${result.error}`);
+            logger.error(`Task ID: ${result.taskId}`);
+            logger.error(
+              `Structured output written to: ${structuredConfig.filePath}`
+            );
+          } else {
+            // 控制台输出模式 - 输出完整的结构化JSON错误结果
+            const structuredResult = {
+              success: result.success,
+              taskId: result.taskId,
+              output: result.output,
+              error: result.error,
+              structured: result.structured,
+            };
+            console.log(JSON.stringify(structuredResult, null, 2));
+          }
+        } else {
+          // 输出常规错误
+          logger.error(`Task failed: ${result.error}`);
+          logger.error(`Task ID: ${result.taskId}`);
+        }
       }
     } catch (error) {
       logger.error(

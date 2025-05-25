@@ -1,6 +1,7 @@
-import { ApiConfig, TaskResult } from "../types";
+import { ApiConfig, TaskResult, StructuredExecutionResult } from "../types";
 import { generateSystemPrompt } from "./prompts/system";
 import { SingleStepExecutor } from "./single-step-executor";
+import { StructuredOutputManager } from "../utils/structured-output";
 import chalk from "chalk";
 import { logger } from "../utils/logger";
 
@@ -12,6 +13,7 @@ export class ContinuousExecutor {
   private taskId: string | undefined;
   private maxSteps: number;
   private systemPrompt: string;
+  private structuredOutputManager?: StructuredOutputManager;
 
   /**
    * 构造函数
@@ -24,6 +26,9 @@ export class ContinuousExecutor {
    * @param customInstructions 自定义指令
    * @param roleDefinition 自定义角色定义，用于覆盖默认角色定义
    * @param taskId 任务ID
+   * @param onlyReturnLastResult 是否只返回最后一个结果
+   * @param structuredOutput 是否启用结构化输出
+   * @param onStructuredUpdate 结构化输出更新回调
    */
   constructor(
     apiConfig: ApiConfig,
@@ -35,7 +40,9 @@ export class ContinuousExecutor {
     customInstructions?: string,
     roleDefinition?: string,
     taskId?: string,
-    private onlyReturnLastResult: boolean = false
+    private onlyReturnLastResult: boolean = false,
+    structuredOutput: boolean = false,
+    onStructuredUpdate?: (data: StructuredExecutionResult) => void
   ) {
     // 生成系统提示
     this.systemPrompt = generateSystemPrompt(
@@ -53,11 +60,29 @@ export class ContinuousExecutor {
       mode,
       cwd,
       this.systemPrompt,
-      taskId!
+      taskId!,
+      structuredOutput,
+      onStructuredUpdate
     );
 
     this.maxSteps = maxSteps;
     this.taskId = taskId;
+
+    // 初始化结构化输出管理器
+    if (structuredOutput && taskId) {
+      this.structuredOutputManager = new StructuredOutputManager(
+        taskId,
+        mode,
+        cwd,
+        {
+          continuous: true,
+          maxSteps,
+          auto,
+          onlyReturnLastResult,
+        },
+        onStructuredUpdate
+      );
+    }
   }
 
   /**
@@ -79,43 +104,102 @@ export class ContinuousExecutor {
       logger.debug(`Task ID: ${this.taskId}`);
       logger.debug(`Initial prompt: ${prompt}`);
 
+      // 添加结构化日志
+      if (this.structuredOutputManager) {
+        this.structuredOutputManager.addLog(
+          "progress",
+          `Starting continuous execution (max steps: ${this.maxSteps})`
+        );
+        this.structuredOutputManager.addLog("debug", `Task ID: ${this.taskId}`);
+        this.structuredOutputManager.addLog(
+          "debug",
+          `Initial prompt: ${prompt}`
+        );
+      }
+
       // 执行步骤
       let currentStep = 0;
       let finalOutput = "";
-      let result;
+      let result: { response: any; toolResult?: string } | undefined;
 
       while (currentStep < this.maxSteps) {
         currentStep++;
         logger.progress(`Executing step ${currentStep}/${this.maxSteps}`);
 
-        // 使用单步执行器执行当前步骤
-        // 只在第一步添加用户消息
-        result = (await this.singleStepExecutor.execute(
-          currentStep === 1 ? prompt : "", // 只在第一步传入用户提示
-          true,
-          currentStep === 1 // 只在第一步添加用户消息
-        )) as { response: any; toolResult?: string };
+        // 开始新步骤（结构化输出）
+        if (this.structuredOutputManager) {
+          this.structuredOutputManager.startStep(currentStep);
+        }
 
-        // 检查是否有工具调用
-        if (result.toolResult) {
-          // 显示工具执行概要
-          logger.progress(`Tool execution completed`);
+        try {
+          // 使用单步执行器执行当前步骤
+          // 只在第一步添加用户消息
+          result = (await this.singleStepExecutor.execute(
+            currentStep === 1 ? prompt : "", // 只在第一步传入用户提示
+            true,
+            currentStep === 1 // 只在第一步添加用户消息
+          )) as { response: any; toolResult?: string };
 
-          // 详细信息放到 info 级别
-          logger.info(chalk.cyan("Assistant Response:"));
-          logger.info(result.response.text);
-          logger.info(chalk.magenta("Tool Result:"));
-          logger.info(result.toolResult);
+          // 检查是否有工具调用
+          if (result.toolResult) {
+            // 显示工具执行概要
+            logger.progress(`Tool execution completed`);
 
-          // 更新输出
-          finalOutput += `${result.response.text}\n\nTool Result:\n${result.toolResult}\n\n`;
-        } else {
-          // 没有工具调用，任务完成
-          logger.success("Task completed without tool calls");
-          logger.info("Final Response:");
-          logger.info(result.response.text);
-          finalOutput += result.response.text;
-          break;
+            // 详细信息放到 info 级别
+            logger.info(chalk.cyan("Assistant Response:"));
+            logger.info(result.response.text);
+            logger.info(chalk.magenta("Tool Result:"));
+            logger.info(result.toolResult);
+
+            // 更新输出
+            const stepOutput = `${result.response.text}\n\nTool Result:\n${result.toolResult}\n\n`;
+            finalOutput += stepOutput;
+
+            // 完成步骤（结构化输出）
+            if (this.structuredOutputManager && result) {
+              const toolResults = result.response.toolCalls
+                ? result.response.toolCalls.map((toolCall: any) => ({
+                    toolName: toolCall.name,
+                    params: toolCall.params,
+                    result: result!.toolResult!,
+                    success: true,
+                    duration: 0, // 这里可以添加实际的执行时间测量
+                  }))
+                : [];
+
+              this.structuredOutputManager.completeStep(
+                result.response,
+                toolResults,
+                stepOutput
+              );
+            }
+          } else {
+            // 没有工具调用，任务完成
+            logger.success("Task completed without tool calls");
+            logger.info("Final Response:");
+            logger.info(result.response.text);
+            finalOutput += result.response.text;
+
+            // 完成步骤（结构化输出）
+            if (this.structuredOutputManager && result) {
+              this.structuredOutputManager.completeStep(
+                result.response,
+                undefined,
+                result.response.text
+              );
+            }
+            break;
+          }
+        } catch (stepError) {
+          // 步骤执行失败
+          const errorMessage =
+            stepError instanceof Error ? stepError.message : String(stepError);
+          logger.error(`Step ${currentStep} failed: ${errorMessage}`);
+
+          if (this.structuredOutputManager) {
+            this.structuredOutputManager.failStep(errorMessage);
+          }
+          throw stepError;
         }
       }
 
@@ -124,27 +208,57 @@ export class ContinuousExecutor {
         logger.warn(`Reached maximum number of steps (${this.maxSteps})`);
         finalOutput +=
           "\n\nNote: Reached maximum number of steps. Task may not be fully completed.";
+
+        if (this.structuredOutputManager) {
+          this.structuredOutputManager.markMaxStepsReached();
+        }
       }
 
-      return {
+      // 完成任务（结构化输出）
+      const taskOutput =
+        this.onlyReturnLastResult && result
+          ? result.response.text
+          : finalOutput;
+
+      if (this.structuredOutputManager) {
+        this.structuredOutputManager.completeTask(true, taskOutput);
+      }
+
+      const taskResult: TaskResult = {
         taskId: this.taskId!,
-        output:
-          this.onlyReturnLastResult && result
-            ? result.response.text
-            : finalOutput,
+        output: taskOutput,
         success: true,
       };
+
+      // 添加结构化数据
+      if (this.structuredOutputManager) {
+        taskResult.structured = this.structuredOutputManager.getData();
+      }
+
+      return taskResult;
     } catch (error) {
-      logger.error(
-        "Error executing task: " +
-          (error instanceof Error ? error.message : String(error))
-      );
-      return {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error("Error executing task: " + errorMessage);
+
+      // 完成任务（结构化输出）
+      if (this.structuredOutputManager) {
+        this.structuredOutputManager.completeTask(false, "", errorMessage);
+      }
+
+      const taskResult: TaskResult = {
         taskId: this.taskId!,
         output: "",
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: errorMessage,
       };
+
+      // 添加结构化数据
+      if (this.structuredOutputManager) {
+        taskResult.structured = this.structuredOutputManager.getData();
+      }
+
+      return taskResult;
     }
   }
 }

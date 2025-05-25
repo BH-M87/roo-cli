@@ -10,6 +10,10 @@ import { ContinuousExecutor } from "./continuous-executor";
 import { SingleStepExecutor } from "./single-step-executor";
 import { TaskManager } from "./task-manager";
 import { logger } from "../utils/logger";
+import {
+  parseStructuredOutputOption,
+  createFileOutputManager,
+} from "../utils/file-output-manager";
 
 /**
  * 工具响应类型
@@ -135,6 +139,26 @@ export async function handleNewTask(
   );
 
   try {
+    // 解析结构化输出选项
+    const structuredOutputConfig = parseStructuredOutputOption(
+      params.structuredOutput
+    );
+    const fileOutputManager = createFileOutputManager(params.structuredOutput);
+
+    // 创建结构化输出更新回调
+    let onStructuredUpdate = params.onStructuredUpdate;
+    if (fileOutputManager) {
+      const originalCallback = params.onStructuredUpdate;
+      onStructuredUpdate = async (data) => {
+        // 写入文件
+        await fileOutputManager.writeUpdate(data);
+        // 调用原始回调（如果有）
+        if (originalCallback) {
+          originalCallback(data);
+        }
+      };
+    }
+
     // 检查是否使用连续执行模式或自动模式
     if (continuous || auto) {
       // 创建连续执行器
@@ -148,36 +172,62 @@ export async function handleNewTask(
         customInstructions,
         roleDefinition,
         taskId,
-        onlyReturnLastResult
+        onlyReturnLastResult,
+        structuredOutputConfig.enabled,
+        onStructuredUpdate
       );
 
       // 执行任务
-      return await executor.execute(prompt);
+      const result = await executor.execute(prompt);
+
+      // 如果有文件输出管理器，写入最终结果
+      if (fileOutputManager) {
+        await fileOutputManager.writeFinalResult(result);
+      }
+
+      return result;
     } else {
       // 单步执行模式
       // 创建单步执行器
-      // 直接使用 logLevel
       const executor = new SingleStepExecutor(
         apiConfig,
         mode,
         workingDir,
         systemPrompt,
-        taskId
+        taskId,
+        structuredOutputConfig.enabled,
+        onStructuredUpdate
       );
 
       // 执行任务
-      return (await executor.execute(prompt, false, true)) as TaskResult;
+      const result = (await executor.execute(
+        prompt,
+        false,
+        true
+      )) as TaskResult;
+
+      // 如果有文件输出管理器，写入最终结果
+      if (fileOutputManager) {
+        await fileOutputManager.writeFinalResult(result);
+      }
+
+      return result;
     }
   } catch (error) {
-    logger.error(
-      "Error executing task: " +
-        (error instanceof Error ? error.message : String(error))
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Error executing task: " + errorMessage);
+
+    // 如果有文件输出管理器，写入错误信息
+    const fileOutputManager = createFileOutputManager(params.structuredOutput);
+    if (fileOutputManager) {
+      await fileOutputManager.writeError(errorMessage);
+    }
+
     return {
       taskId,
       output: "",
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMessage,
     };
   }
 }

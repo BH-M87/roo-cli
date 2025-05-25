@@ -34,7 +34,18 @@ export {
   TaskResult,
   HandleNewTaskParams,
   CommandOptions,
+  StructuredExecutionResult,
+  ExecutionStep,
+  LogEntry,
 } from "./types";
+
+// Utilities
+export { StructuredOutputManager } from "./utils/structured-output";
+export {
+  FileOutputManager,
+  parseStructuredOutputOption,
+  createFileOutputManager,
+} from "./utils/file-output-manager";
 
 // Logging
 export { logger, LogLevel, setLogLevel } from "./utils/logger";

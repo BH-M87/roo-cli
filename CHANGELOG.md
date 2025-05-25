@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Enhanced `--structured-output` parameter to support file output
+
+  - Extended `--structured-output` to accept file paths for output to files
+  - Supports both console output mode (`--structured-output`) and file output mode (`--structured-output <file-path>`)
+  - File output includes comprehensive execution information: progress, steps, logs, statistics, and final results
+  - Real-time file updates during task execution for monitoring long-running tasks
+  - Automatic directory creation for output file paths
+  - Improved user experience with simplified console output when using file mode
+  - Added `FileOutputManager` utility class for managing structured file output
+  - Added `parseStructuredOutputOption` utility for parsing output options
+  - Enhanced error handling with file output support
+  - Updated examples and documentation for both output modes
+  - Perfect for monitoring, analysis, integration, and reporting use cases
+
 - Added `--stream-mode` parameter to enable stream mode for OpenAI API calls
 
   - New `--stream-mode` command line flag to enable stream mode for OpenAI API calls
