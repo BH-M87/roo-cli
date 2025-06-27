@@ -19,14 +19,14 @@ import {
  * @param roleDefinition 自定义角色定义，用于覆盖默认角色定义
  * @returns 系统提示
  */
-export function generateSystemPrompt(
+export async function generateSystemPrompt(
 	cwd: string,
 	mode: string = "code",
 	rules?: string,
 	auto: boolean = false,
 	customInstructions?: string,
 	roleDefinition?: string,
-): string {
+): Promise<string> {
 	// 获取角色定义
 	const defaultRoleDefinition = getRoleDefinition(mode)
 	// 使用自定义角色定义或默认角色定义
@@ -36,6 +36,8 @@ export function generateSystemPrompt(
 	const autoModeInstructions = auto
 		? `\n\nYou are running in AUTO MODE. This means you should automatically execute tasks without asking for user confirmation. Be proactive and complete tasks efficiently without waiting for explicit approval.`
 		: ""
+
+	const rulesSection = await getRulesSection(cwd, rules)
 
 	const systemPrompt = `${finalRoleDefinition}${autoModeInstructions}
 
@@ -49,7 +51,7 @@ ${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd)}
 
-${getRulesSection(cwd, rules)}
+${rulesSection}
 
 ${getObjectiveSection()}
 

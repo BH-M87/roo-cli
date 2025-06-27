@@ -126,13 +126,29 @@ export const writeToFileTool: ToolHandler = async ({ toolUse, cwd }) => {
 		return 'Error: Missing required parameter "content"'
 	}
 
+	// Handle special cases for content
+	// Allow newline-only content and empty content as per roo-code improvements
+	if (content === null) {
+		content = ""
+	}
+
 	try {
 		// 预处理内容
 		content = preprocessContent(content)
 
+		// Handle newline-only content - don't treat it as truncated
+		const isNewlineOnlyContent = content === "\n" || content === "\r\n"
+		const isEmptyContent = content === ""
+
 		// 解析文件路径
 		const fullPath = path.resolve(cwd, relPath)
 		logger.debug(`Writing to file: ${fullPath}`)
+
+		if (isEmptyContent) {
+			logger.debug("Writing empty content to file")
+		} else if (isNewlineOnlyContent) {
+			logger.debug("Writing newline-only content to file")
+		}
 
 		// 检查文件是否存在
 		const fileExists = await fs.pathExists(fullPath)
@@ -141,8 +157,8 @@ export const writeToFileTool: ToolHandler = async ({ toolUse, cwd }) => {
 			logger.debug(`File exists: ${fullPath}`)
 		}
 
-		// 检测代码是否被截断
-		if (detectCodeOmission(content, predictedLineCount)) {
+		// 检测代码是否被截断 (but skip for newline-only and empty content)
+		if (!isNewlineOnlyContent && !isEmptyContent && detectCodeOmission(content, predictedLineCount)) {
 			return {
 				text: `Warning: The content appears to be truncated or contains code omission markers (e.g., '// rest of code unchanged'). Please provide the complete file content without any omissions.`,
 			} as ToolResponse
@@ -155,15 +171,23 @@ export const writeToFileTool: ToolHandler = async ({ toolUse, cwd }) => {
 		await fs.writeFile(fullPath, content, "utf-8")
 
 		// 返回成功消息
+		let successMessage = ""
 		if (fileExists) {
-			return {
-				text: `Successfully updated existing file: ${relPath}`,
-			} as ToolResponse
+			successMessage = `Successfully updated existing file: ${relPath}`
 		} else {
-			return {
-				text: `Successfully created new file: ${relPath}`,
-			} as ToolResponse
+			successMessage = `Successfully created new file: ${relPath}`
 		}
+
+		// Add context about content type
+		if (isEmptyContent) {
+			successMessage += " (empty file)"
+		} else if (isNewlineOnlyContent) {
+			successMessage += " (newline-only content)"
+		}
+
+		return {
+			text: successMessage,
+		} as ToolResponse
 	} catch (error) {
 		logger.error(`Error writing to file ${relPath}: ${error instanceof Error ? error.message : String(error)}`)
 		return `Error writing to file ${relPath}: ${error instanceof Error ? error.message : String(error)}`

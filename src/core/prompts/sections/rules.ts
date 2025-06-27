@@ -1,3 +1,5 @@
+import { loadRuleFiles } from "../../rules-loader"
+
 /**
  * 获取编辑指令
  * @returns 编辑指令
@@ -44,7 +46,7 @@ function getEditingInstructions(): string {
  * @param customRules 自定义规则
  * @returns 规则部分
  */
-export function getRulesSection(cwd: string, customRules?: string): string {
+export async function getRulesSection(cwd: string, customRules?: string): Promise<string> {
 	const defaultRules = `====
 
 RULES
@@ -66,14 +68,19 @@ ${getEditingInstructions()}
 - You are STRICTLY FORBIDDEN from starting your messages with "Great", "Certainly", "Okay", "Sure". You should NOT be conversational in your responses, but rather direct and to the point. For example you should NOT say "Great, I've updated the CSS" but instead something like "I've updated the CSS". It is important you be clear and technical in your messages.
 - It is critical you wait for the user's response after each tool use, in order to confirm the success of the tool use. For example, if asked to make a todo app, you would create a file, wait for the user's response it was created successfully, then create another file if needed, wait for the user's response it was created successfully, etc.`
 
-	// 如果有自定义规则，添加到默认规则后面
-	if (customRules) {
-		return `${defaultRules}
+	// Load rules from .roo directories (global and project-local)
+	const loadedRules = await loadRuleFiles(cwd)
 
-# CUSTOM RULES
+	// Combine default rules with loaded rules and custom rules
+	let finalRules = defaultRules
 
-${customRules}`
+	if (loadedRules) {
+		finalRules += `\n\n# LOADED RULES\n${loadedRules}`
 	}
 
-	return defaultRules
+	if (customRules) {
+		finalRules += `\n\n# CUSTOM RULES\n\n${customRules}`
+	}
+
+	return finalRules
 }
