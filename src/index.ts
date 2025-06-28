@@ -26,6 +26,7 @@ import { Provider } from "./core/provider"
 import { parseStructuredOutputOption } from "./utils/file-output-manager"
 import { createShareCommand } from "./commands/share"
 import { createImportSettingsCommand } from "./commands/import-settings"
+import { createRAGConfigCommand } from "./commands/rag-config"
 
 // Load environment variables
 dotenv.config()
@@ -445,6 +446,9 @@ program.addCommand(createShareCommand())
 
 // Add import settings command
 program.addCommand(createImportSettingsCommand())
+
+// Add RAG configuration command
+program.addCommand(createRAGConfigCommand())
 
 // Start server command
 program

@@ -2,7 +2,20 @@
 
 A command-line interface inspired by RooCode, allowing you to execute AI tasks from the terminal.
 
-Roo CLI can be used both as a command-line tool and as a library in your Node.js applications.
+Roo CLI can be used both as a command-line tool and as a library in your Node.js applications. It features advanced RAG (Retrieval-Augmented Generation) capabilities with support for both in-memory and Qdrant vector stores for semantic code search.
+
+## ✨ Key Features
+
+- 🤖 **AI-Powered Task Execution**: Execute complex coding tasks using advanced AI models
+- 🔍 **Semantic Code Search**: Find code using natural language descriptions with RAG technology
+- 🗄️ **Multiple Vector Stores**: Support for both in-memory and Qdrant vector databases
+- 🔧 **Flexible Configuration**: Comprehensive configuration management for all features
+- 🌐 **MCP Protocol Support**: Integration with Model Context Protocol for external clients
+- 📊 **Structured Output**: Detailed execution logs and progress tracking
+- 🐳 **Docker Support**: Easy deployment with Docker and Docker Compose
+- 🛠️ **Rich Tool Ecosystem**: Extensive set of tools for file operations, code analysis, and more
+- 📚 **Library Usage**: Use as a Node.js library in your applications
+- 🎯 **Multiple Modes**: Specialized modes for different types of tasks (code, test, debug, etc.)
 
 ## Installation
 
@@ -39,71 +52,67 @@ docker-compose build
 You can import and use Roo CLI in your Node.js applications:
 
 ```typescript
-import { handleNewTask, ApiConfig, ApiProvider } from "roo-cli";
+import { handleNewTask, ApiConfig, ApiProvider } from "roo-cli"
 
 // Define API configuration
 const apiConfig: ApiConfig = {
-  apiProvider: ApiProvider.ANTHROPIC,
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-  anthropicModelId: "claude-3-5-sonnet-20241022",
-  id: "my-config",
-};
+	apiProvider: ApiProvider.ANTHROPIC,
+	anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+	anthropicModelId: "claude-3-5-sonnet-20241022",
+	id: "my-config",
+}
 
 // Execute a task
 async function executeTask() {
-  const result = await handleNewTask({
-    prompt: "Write a function to calculate the Fibonacci sequence",
-    mode: "code",
-    apiConfig,
-    cwd: process.cwd(),
-  });
+	const result = await handleNewTask({
+		prompt: "Write a function to calculate the Fibonacci sequence",
+		mode: "code",
+		apiConfig,
+		cwd: process.cwd(),
+	})
 
-  console.log(result.output);
+	console.log(result.output)
 }
 
 // Execute a task with structured output
 async function executeTaskWithStructuredOutput() {
-  const result = await handleNewTask({
-    prompt: "Create a simple web server",
-    mode: "code",
-    apiConfig,
-    cwd: process.cwd(),
-    continuous: true,
-    structuredOutput: true,
-    onStructuredUpdate: (data) => {
-      console.log(`Progress: ${data.progress.percentage}%`);
-      console.log(
-        `Current step: ${data.progress.currentStep}/${data.progress.totalSteps}`
-      );
-    },
-  });
+	const result = await handleNewTask({
+		prompt: "Create a simple web server",
+		mode: "code",
+		apiConfig,
+		cwd: process.cwd(),
+		continuous: true,
+		structuredOutput: true,
+		onStructuredUpdate: (data) => {
+			console.log(`Progress: ${data.progress.percentage}%`)
+			console.log(`Current step: ${data.progress.currentStep}/${data.progress.totalSteps}`)
+		},
+	})
 
-  if (result.structured) {
-    console.log("Execution completed!");
-    console.log(`Total steps: ${result.structured.steps.length}`);
-    console.log(`Total tool calls: ${result.structured.stats.totalToolCalls}`);
-    console.log(
-      `Average step time: ${result.structured.stats.averageStepTime}ms`
-    );
-  }
+	if (result.structured) {
+		console.log("Execution completed!")
+		console.log(`Total steps: ${result.structured.steps.length}`)
+		console.log(`Total tool calls: ${result.structured.stats.totalToolCalls}`)
+		console.log(`Average step time: ${result.structured.stats.averageStepTime}ms`)
+	}
 }
 
 // Execute a task with file output
 async function executeTaskWithFileOutput() {
-  const result = await handleNewTask({
-    prompt: "Build a complete application",
-    mode: "code",
-    apiConfig,
-    cwd: process.cwd(),
-    continuous: true,
-    structuredOutput: "./execution-log.json",
-  });
+	const result = await handleNewTask({
+		prompt: "Build a complete application",
+		mode: "code",
+		apiConfig,
+		cwd: process.cwd(),
+		continuous: true,
+		structuredOutput: "./execution-log.json",
+	})
 
-  console.log(`Task completed: ${result.success}`);
-  console.log("Detailed execution log saved to: ./execution-log.json");
+	console.log(`Task completed: ${result.success}`)
+	console.log("Detailed execution log saved to: ./execution-log.json")
 }
 
-executeTask();
+executeTask()
 ```
 
 See the `examples/library-usage.ts` and `examples/structured-output-example.js` files for more detailed examples.
@@ -469,6 +478,130 @@ Priority order for these settings is:
 3. Current mode's settings from custom modes
 4. Default values (lowest priority)
 
+## RAG (Retrieval-Augmented Generation) Features
+
+Roo CLI includes advanced RAG capabilities that enable semantic code search and intelligent code analysis. The system supports both in-memory and Qdrant vector stores for different use cases.
+
+### Semantic Code Search
+
+The semantic code search tool allows you to find code based on natural language descriptions rather than just keywords:
+
+```bash
+# Search for authentication-related code
+roo tool semantic_code_search --params '{
+  "path": "src",
+  "query": "user authentication and login functionality",
+  "top_k": 5
+}'
+
+# Search for database operations
+roo tool semantic_code_search --params '{
+  "path": "backend",
+  "query": "database queries and data persistence",
+  "file_pattern": "**/*.{js,ts,py}",
+  "top_k": 3
+}'
+
+# Search for error handling patterns
+roo tool semantic_code_search --params '{
+  "path": ".",
+  "query": "error handling and exception management"
+}'
+```
+
+### RAG Configuration Management
+
+Roo CLI provides comprehensive RAG configuration management through the `rag` command:
+
+```bash
+# View current RAG configuration
+roo rag status
+
+# Configure Qdrant vector store
+roo rag configure-qdrant \
+  --url http://localhost:6333 \
+  --collection my-project \
+  --dimensions 1536 \
+  --api-key your-api-key
+
+# Configure in-memory vector store
+roo rag configure-memory --dimensions 256
+
+# Enable/disable RAG functionality
+roo rag enable
+roo rag disable
+
+# Validate current configuration
+roo rag validate
+
+# Reset to default settings
+roo rag reset
+
+# Export configuration for backup
+roo rag export --file rag-config.json
+
+# Import configuration from backup
+roo rag import --file rag-config.json
+```
+
+### Vector Store Options
+
+#### In-Memory Vector Store
+
+- **Best for**: Development, testing, small projects
+- **Pros**: No external dependencies, fast setup
+- **Cons**: Limited by available RAM, data not persistent
+
+#### Qdrant Vector Store
+
+- **Best for**: Production, large codebases, persistent storage
+- **Pros**: Scalable, persistent, advanced search features
+- **Cons**: Requires Qdrant server setup
+
+### RAG Configuration File
+
+You can configure RAG settings in your `.rooSettings` file:
+
+```json
+{
+	"ragEnabled": true,
+	"ragSettings": {
+		"vectorStore": {
+			"type": "qdrant",
+			"url": "http://localhost:6333",
+			"collectionName": "my-project-code",
+			"dimensions": 1536,
+			"apiKey": "your-api-key"
+		},
+		"autoIndexWorkspace": true,
+		"maxResultsPerQuery": 5,
+		"supportedFileTypes": ["js", "ts", "jsx", "tsx", "py", "java", "c", "cpp", "cs", "go", "rb", "php"]
+	}
+}
+```
+
+### Setting up Qdrant
+
+To use Qdrant vector store, you need to have a Qdrant server running:
+
+```bash
+# Using Docker
+docker run -p 6333:6333 qdrant/qdrant
+
+# Using Docker Compose
+version: '3.8'
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  qdrant_data:
+```
+
 ### Using Tools
 
 ```bash
@@ -593,44 +726,44 @@ The SSE server provides two main endpoints:
 Example client code to connect to the MCP stdio server:
 
 ```javascript
-const { spawn } = require("child_process");
-const readline = require("readline");
+const { spawn } = require("child_process")
+const readline = require("readline")
 
 // Spawn the MCP stdio server process
 const serverProcess = spawn("roo", ["mcp-stdio"], {
-  stdio: ["pipe", "pipe", "inherit"],
-});
+	stdio: ["pipe", "pipe", "inherit"],
+})
 
 // Create readline interface
 const rl = readline.createInterface({
-  input: serverProcess.stdout,
-  terminal: false,
-});
+	input: serverProcess.stdout,
+	terminal: false,
+})
 
 // Handle server output line by line
 rl.on("line", (line) => {
-  try {
-    const message = JSON.parse(line);
-    console.log("Received message:", message);
+	try {
+		const message = JSON.parse(line)
+		console.log("Received message:", message)
 
-    // If it's the init message, send a task request
-    if (message.type === "init") {
-      sendMessage({
-        type: "task",
-        id: "task-1",
-        prompt: "Write a simple hello world function in JavaScript",
-        mode: "code",
-        cwd: process.cwd(),
-      });
-    }
-  } catch (error) {
-    console.error("Error parsing line:", error.message);
-  }
-});
+		// If it's the init message, send a task request
+		if (message.type === "init") {
+			sendMessage({
+				type: "task",
+				id: "task-1",
+				prompt: "Write a simple hello world function in JavaScript",
+				mode: "code",
+				cwd: process.cwd(),
+			})
+		}
+	} catch (error) {
+		console.error("Error parsing line:", error.message)
+	}
+})
 
 // Send a message to the server
 function sendMessage(message) {
-  serverProcess.stdin.write(JSON.stringify(message) + "\n");
+	serverProcess.stdin.write(JSON.stringify(message) + "\n")
 }
 ```
 
@@ -657,12 +790,12 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "mode": "code",
-  "message": "Write a function to calculate the Fibonacci sequence",
-  "cwd": "/path/to/working/directory",
-  "auto": false,
-  "rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises.",
-  "roleDefinition": "You are an expert JavaScript developer with deep knowledge of algorithms."
+	"mode": "code",
+	"message": "Write a function to calculate the Fibonacci sequence",
+	"cwd": "/path/to/working/directory",
+	"auto": false,
+	"rules": "11. Always use ES6 syntax. 12. Use async/await instead of promises.",
+	"roleDefinition": "You are an expert JavaScript developer with deep knowledge of algorithms."
 }
 ```
 
@@ -670,22 +803,22 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "currentApiConfigName": "anthropic",
-  "apiConfigs": {
-    "anthropic": {
-      "apiProvider": "anthropic",
-      "anthropicApiKey": "your-api-key",
-      "anthropicModelId": "claude-3-5-sonnet-20241022",
-      "id": "anthropic"
-    },
-    "openai": {
-      "apiProvider": "openai",
-      "openAiApiKey": "your-api-key",
-      "openAiBaseUrl": "https://api.openai.com/v1",
-      "openAiModelId": "gpt-4",
-      "id": "openai"
-    }
-  }
+	"currentApiConfigName": "anthropic",
+	"apiConfigs": {
+		"anthropic": {
+			"apiProvider": "anthropic",
+			"anthropicApiKey": "your-api-key",
+			"anthropicModelId": "claude-3-5-sonnet-20241022",
+			"id": "anthropic"
+		},
+		"openai": {
+			"apiProvider": "openai",
+			"openAiApiKey": "your-api-key",
+			"openAiBaseUrl": "https://api.openai.com/v1",
+			"openAiModelId": "gpt-4",
+			"id": "openai"
+		}
+	}
 }
 ```
 
@@ -693,21 +826,31 @@ The CLI uses several configuration files:
 
 ```json
 {
-  "autoApprovalEnabled": true,
-  "alwaysAllowReadOnly": true,
-  "alwaysAllowWrite": true,
-  "alwaysAllowExecute": true,
-  "allowedCommands": ["npm test", "npm install", "git log"],
-  "customModes": [
-    {
-      "slug": "test",
-      "name": "Test",
-      "roleDefinition": "You are a testing specialist...",
-      "customInstructions": "When writing tests...",
-      "groups": ["read", "browser", "command"],
-      "source": "project"
-    }
-  ]
+	"autoApprovalEnabled": true,
+	"alwaysAllowReadOnly": true,
+	"alwaysAllowWrite": true,
+	"alwaysAllowExecute": true,
+	"allowedCommands": ["npm test", "npm install", "git log"],
+	"ragEnabled": true,
+	"ragSettings": {
+		"vectorStore": {
+			"type": "in-memory",
+			"dimensions": 256
+		},
+		"autoIndexWorkspace": true,
+		"maxResultsPerQuery": 5,
+		"supportedFileTypes": ["js", "ts", "jsx", "tsx", "py", "java", "c", "cpp", "cs", "go", "rb", "php"]
+	},
+	"customModes": [
+		{
+			"slug": "test",
+			"name": "Test",
+			"roleDefinition": "You are a testing specialist...",
+			"customInstructions": "When writing tests...",
+			"groups": ["read", "browser", "command"],
+			"source": "project"
+		}
+	]
 }
 ```
 
@@ -715,13 +858,13 @@ The CLI uses several configuration files:
 
 ```json
 [
-  {
-    "slug": "translate",
-    "name": "Translate",
-    "roleDefinition": "You are a linguistic specialist...",
-    "groups": ["read", "command"],
-    "source": "project"
-  }
+	{
+		"slug": "translate",
+		"name": "Translate",
+		"roleDefinition": "You are a linguistic specialist...",
+		"groups": ["read", "command"],
+		"source": "project"
+	}
 ]
 ```
 
@@ -738,6 +881,9 @@ When running the server, the following endpoints are available:
 - `POST /api/config/modes`: Update custom modes
 - `POST /api/config/mode`: Set current mode
 - `GET /api/tools`: Get available tools
+- `GET /api/rag/status`: Get RAG configuration status
+- `POST /api/rag/configure`: Update RAG configuration
+- `POST /api/rag/search`: Perform semantic code search
 
 The server now supports CORS, allowing cross-origin requests from web applications. It also provides detailed error handling and logging for better debugging.
 
@@ -788,6 +934,11 @@ OPENAI_MODEL_ID=gpt-4
 
 # Server Configuration
 PORT=3000                           # Port for API and MCP SSE servers
+
+# RAG Configuration
+QDRANT_URL=http://localhost:6333     # Qdrant server URL
+QDRANT_API_KEY=your-qdrant-api-key   # Qdrant API key (optional)
+QDRANT_COLLECTION=roo-code           # Default collection name
 
 # For Docker
 WORKSPACE_PATH=/path/to/your/workspace
