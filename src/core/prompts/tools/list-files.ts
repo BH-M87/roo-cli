@@ -6,7 +6,7 @@ import { ToolArgs } from './types';
  * @returns 工具描述
  */
 export function getListFilesDescription(args: ToolArgs): string {
-  return `## list_files
+	return `## list_files
 Description: List files in a directory.
 Parameters:
 - path: (required) The path to the directory to list files from. This can be a relative path from the current working directory (${args.cwd}) or an absolute path.

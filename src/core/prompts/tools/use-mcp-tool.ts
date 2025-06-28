@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取使用MCP工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types"
  * @returns 工具描述
  */
 export function getUseMcpToolDescription(args: ToolArgs): string {
-  return `## use_mcp_tool
+	return `## use_mcp_tool
 Description: Request to use a tool provided by a connected MCP server. Each MCP server can provide multiple tools with different capabilities. Tools have defined input schemas that specify required and optional parameters.
 Parameters:
 - server_name: (required) The name of the MCP server providing the tool
@@ -34,5 +34,5 @@ Example: Requesting to use an MCP tool
   "path": "src"
 }
 </arguments>
-</use_mcp_tool>`
+</use_mcp_tool>`;
 }

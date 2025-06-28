@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types";
+import { ToolArgs } from './types';
 
 /**
  * 获取 search_files 工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types";
  * @returns 工具描述
  */
 export function getSearchFilesDescription(args: ToolArgs): string {
-  return `## search_files
+	return `## search_files
 Description: Request to perform a regex search across files in a specified directory, providing context-rich results. This tool searches for patterns or specific content across multiple files, displaying each match with encapsulating context.
 Parameters:
 - path: (required) The path of the directory to search in (relative to the current workspace directory ${args.cwd}). This directory will be recursively searched.

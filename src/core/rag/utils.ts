@@ -2,8 +2,11 @@
  * RAG utility functions
  */
 
-import { VectorStoreType, VectorStoreConfigWithType } from "./vector-store-factory"
-import { logger } from "../../utils/logger"
+import {
+	VectorStoreType,
+	VectorStoreConfigWithType,
+} from './vector-store-factory';
+import { logger } from '../../utils/logger';
 
 /**
  * Create a default Qdrant configuration
@@ -16,8 +19,8 @@ export function createQdrantConfig(
 	url: string,
 	collectionName: string,
 	options: {
-		dimensions?: number
-		apiKey?: string
+		dimensions?: number;
+		apiKey?: string;
 	} = {},
 ): VectorStoreConfigWithType {
 	return {
@@ -26,7 +29,7 @@ export function createQdrantConfig(
 		collectionName,
 		dimensions: options.dimensions || 1536,
 		apiKey: options.apiKey,
-	}
+	};
 }
 
 /**
@@ -34,11 +37,13 @@ export function createQdrantConfig(
  * @param dimensions Vector dimensions
  * @returns In-memory configuration
  */
-export function createInMemoryConfig(dimensions: number = 256): VectorStoreConfigWithType {
+export function createInMemoryConfig(
+	dimensions: number = 256,
+): VectorStoreConfigWithType {
 	return {
 		type: VectorStoreType.IN_MEMORY,
 		dimensions,
-	}
+	};
 }
 
 /**
@@ -48,10 +53,10 @@ export function createInMemoryConfig(dimensions: number = 256): VectorStoreConfi
  */
 export function isValidQdrantUrl(url: string): boolean {
 	try {
-		const urlObj = new URL(url)
-		return urlObj.protocol === "http:" || urlObj.protocol === "https:"
+		const urlObj = new URL(url);
+		return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
 	} catch {
-		return false
+		return false;
 	}
 }
 
@@ -61,15 +66,18 @@ export function isValidQdrantUrl(url: string): boolean {
  * @param prefix Optional prefix
  * @returns Collection name
  */
-export function generateCollectionName(workspacePath: string, prefix: string = "roo-code"): string {
+export function generateCollectionName(
+	workspacePath: string,
+	prefix: string = 'roo-code',
+): string {
 	// Create a safe collection name from workspace path
 	const safeName = workspacePath
-		.replace(/[^a-zA-Z0-9]/g, "_")
-		.replace(/_+/g, "_")
-		.replace(/^_|_$/g, "")
-		.toLowerCase()
+		.replace(/[^a-zA-Z0-9]/g, '_')
+		.replace(/_+/g, '_')
+		.replace(/^_|_$/g, '')
+		.toLowerCase();
 
-	return `${prefix}_${safeName}`
+	return `${prefix}_${safeName}`;
 }
 
 /**
@@ -77,16 +85,18 @@ export function generateCollectionName(workspacePath: string, prefix: string = "
  * @param config Vector store configuration
  * @returns True if complete, false otherwise
  */
-export function isConfigurationComplete(config: VectorStoreConfigWithType): boolean {
+export function isConfigurationComplete(
+	config: VectorStoreConfigWithType,
+): boolean {
 	if (!config.type) {
-		return false
+		return false;
 	}
 
 	if (config.type === VectorStoreType.QDRANT) {
-		return !!(config.url && config.collectionName)
+		return !!(config.url && config.collectionName);
 	}
 
-	return true // In-memory store doesn't need additional config
+	return true; // In-memory store doesn't need additional config
 }
 
 /**
@@ -96,19 +106,19 @@ export function isConfigurationComplete(config: VectorStoreConfigWithType): bool
  */
 export function getRecommendedDimensions(modelName?: string): number {
 	const dimensionMap: Record<string, number> = {
-		"text-embedding-ada-002": 1536,
-		"text-embedding-3-small": 1536,
-		"text-embedding-3-large": 3072,
-		"all-MiniLM-L6-v2": 384,
-		"all-mpnet-base-v2": 768,
-	}
+		'text-embedding-ada-002': 1536,
+		'text-embedding-3-small': 1536,
+		'text-embedding-3-large': 3072,
+		'all-MiniLM-L6-v2': 384,
+		'all-mpnet-base-v2': 768,
+	};
 
 	if (modelName && dimensionMap[modelName]) {
-		return dimensionMap[modelName]
+		return dimensionMap[modelName];
 	}
 
 	// Default dimension for most models
-	return 1536
+	return 1536;
 }
 
 /**
@@ -118,7 +128,7 @@ export function getRecommendedDimensions(modelName?: string): number {
 export function logVectorStoreConfig(config: VectorStoreConfigWithType): void {
 	logger.debug(
 		`Vector store configuration: type=${config.type}, dimensions=${config.dimensions}, hasUrl=${!!config.url}, hasApiKey=${!!config.apiKey}, hasCollectionName=${!!config.collectionName}`,
-	)
+	);
 }
 
 /**
@@ -130,10 +140,10 @@ export function sanitizeCollectionName(name: string): string {
 	// Qdrant collection names must be alphanumeric with underscores and hyphens
 	return name
 		.toLowerCase()
-		.replace(/[^a-z0-9_-]/g, "_")
-		.replace(/_+/g, "_")
-		.replace(/^_|_$/g, "")
-		.substring(0, 63) // Qdrant has a 63 character limit
+		.replace(/[^a-z0-9_-]/g, '_')
+		.replace(/_+/g, '_')
+		.replace(/^_|_$/g, '')
+		.substring(0, 63); // Qdrant has a 63 character limit
 }
 
 /**
@@ -141,7 +151,7 @@ export function sanitizeCollectionName(name: string): string {
  * @returns Test configuration
  */
 export function createTestConfig(): VectorStoreConfigWithType {
-	return createInMemoryConfig(256)
+	return createInMemoryConfig(256);
 }
 
 /**
@@ -156,24 +166,24 @@ export function createProductionQdrantConfig(
 	url: string,
 	collectionName: string,
 	options: {
-		dimensions?: number
-		apiKey?: string
+		dimensions?: number;
+		apiKey?: string;
 	} = {},
 ): VectorStoreConfigWithType {
 	if (!isValidQdrantUrl(url)) {
-		throw new Error(`Invalid Qdrant URL: ${url}`)
+		throw new Error(`Invalid Qdrant URL: ${url}`);
 	}
 
-	const sanitizedName = sanitizeCollectionName(collectionName)
+	const sanitizedName = sanitizeCollectionName(collectionName);
 	if (!sanitizedName) {
-		throw new Error(`Invalid collection name: ${collectionName}`)
+		throw new Error(`Invalid collection name: ${collectionName}`);
 	}
 
-	const config = createQdrantConfig(url, sanitizedName, options)
+	const config = createQdrantConfig(url, sanitizedName, options);
 
 	if (!isConfigurationComplete(config)) {
-		throw new Error("Incomplete Qdrant configuration")
+		throw new Error('Incomplete Qdrant configuration');
 	}
 
-	return config
+	return config;
 }

@@ -1,13 +1,13 @@
-import * as fs from "fs/promises";
-import * as path from "path";
-import * as os from "os";
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as os from 'os';
 
 /**
  * Get the global .roo directory path
  * @returns Global .roo directory path
  */
 export function getGlobalRooDirectory(): string {
-  return path.join(os.homedir(), ".roo");
+	return path.join(os.homedir(), '.roo');
 }
 
 /**
@@ -16,7 +16,7 @@ export function getGlobalRooDirectory(): string {
  * @returns Project-local .roo directory path
  */
 export function getProjectRooDirectoryForCwd(cwd: string): string {
-  return path.join(cwd, ".roo");
+	return path.join(cwd, '.roo');
 }
 
 /**
@@ -25,7 +25,7 @@ export function getProjectRooDirectoryForCwd(cwd: string): string {
  * @returns Array of .roo directory paths
  */
 export function getRooDirectoriesForCwd(cwd: string): string[] {
-  return [getGlobalRooDirectory(), getProjectRooDirectoryForCwd(cwd)];
+	return [getGlobalRooDirectory(), getProjectRooDirectoryForCwd(cwd)];
 }
 
 /**
@@ -34,12 +34,12 @@ export function getRooDirectoriesForCwd(cwd: string): string[] {
  * @returns True if directory exists, false otherwise
  */
 export async function directoryExists(dirPath: string): Promise<boolean> {
-  try {
-    const stat = await fs.stat(dirPath);
-    return stat.isDirectory();
-  } catch {
-    return false;
-  }
+	try {
+		const stat = await fs.stat(dirPath);
+		return stat.isDirectory();
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -48,12 +48,12 @@ export async function directoryExists(dirPath: string): Promise<boolean> {
  * @returns True if file exists, false otherwise
  */
 export async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    const stat = await fs.stat(filePath);
-    return stat.isFile();
-  } catch {
-    return false;
-  }
+	try {
+		const stat = await fs.stat(filePath);
+		return stat.isFile();
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -61,15 +61,17 @@ export async function fileExists(filePath: string): Promise<boolean> {
  * @param filePath File path to read
  * @returns File content or null if file doesn't exist
  */
-export async function readFileIfExists(filePath: string): Promise<string | null> {
-  try {
-    if (await fileExists(filePath)) {
-      return await fs.readFile(filePath, "utf-8");
-    }
-    return null;
-  } catch {
-    return null;
-  }
+export async function readFileIfExists(
+	filePath: string,
+): Promise<string | null> {
+	try {
+		if (await fileExists(filePath)) {
+			return await fs.readFile(filePath, 'utf-8');
+		}
+		return null;
+	} catch {
+		return null;
+	}
 }
 
 /**
@@ -78,34 +80,34 @@ export async function readFileIfExists(filePath: string): Promise<string | null>
  * @returns Array of file objects with name and content
  */
 export async function readTextFilesFromDirectory(
-  dirPath: string
+	dirPath: string,
 ): Promise<Array<{ name: string; content: string }>> {
-  try {
-    if (!(await directoryExists(dirPath))) {
-      return [];
-    }
+	try {
+		if (!(await directoryExists(dirPath))) {
+			return [];
+		}
 
-    const files = await fs.readdir(dirPath);
-    const textFiles: Array<{ name: string; content: string }> = [];
+		const files = await fs.readdir(dirPath);
+		const textFiles: Array<{ name: string; content: string }> = [];
 
-    for (const file of files) {
-      const filePath = path.join(dirPath, file);
-      const stat = await fs.stat(filePath);
+		for (const file of files) {
+			const filePath = path.join(dirPath, file);
+			const stat = await fs.stat(filePath);
 
-      if (stat.isFile() && isTextFile(file)) {
-        try {
-          const content = await fs.readFile(filePath, "utf-8");
-          textFiles.push({ name: file, content });
-        } catch {
-          // Skip files that can't be read
-        }
-      }
-    }
+			if (stat.isFile() && isTextFile(file)) {
+				try {
+					const content = await fs.readFile(filePath, 'utf-8');
+					textFiles.push({ name: file, content });
+				} catch {
+					// Skip files that can't be read
+				}
+			}
+		}
 
-    return textFiles.sort((a, b) => a.name.localeCompare(b.name));
-  } catch {
-    return [];
-  }
+		return textFiles.sort((a, b) => a.name.localeCompare(b.name));
+	} catch {
+		return [];
+	}
 }
 
 /**
@@ -114,54 +116,54 @@ export async function readTextFilesFromDirectory(
  * @returns True if it's a text file
  */
 function isTextFile(fileName: string): boolean {
-  const textExtensions = [
-    ".md",
-    ".txt",
-    ".json",
-    ".yaml",
-    ".yml",
-    ".js",
-    ".ts",
-    ".py",
-    ".java",
-    ".cpp",
-    ".c",
-    ".h",
-    ".css",
-    ".html",
-    ".xml",
-    ".sh",
-    ".bat",
-    ".ps1",
-    ".rb",
-    ".php",
-    ".go",
-    ".rs",
-    ".swift",
-    ".kt",
-    ".scala",
-    ".clj",
-    ".hs",
-    ".elm",
-    ".ex",
-    ".exs",
-    ".erl",
-    ".pl",
-    ".r",
-    ".sql",
-    ".dockerfile",
-    ".gitignore",
-    ".gitattributes",
-    ".editorconfig",
-    ".eslintrc",
-    ".prettierrc",
-    ".babelrc",
-    ".npmrc",
-    ".yarnrc",
-  ];
+	const textExtensions = [
+		'.md',
+		'.txt',
+		'.json',
+		'.yaml',
+		'.yml',
+		'.js',
+		'.ts',
+		'.py',
+		'.java',
+		'.cpp',
+		'.c',
+		'.h',
+		'.css',
+		'.html',
+		'.xml',
+		'.sh',
+		'.bat',
+		'.ps1',
+		'.rb',
+		'.php',
+		'.go',
+		'.rs',
+		'.swift',
+		'.kt',
+		'.scala',
+		'.clj',
+		'.hs',
+		'.elm',
+		'.ex',
+		'.exs',
+		'.erl',
+		'.pl',
+		'.r',
+		'.sql',
+		'.dockerfile',
+		'.gitignore',
+		'.gitattributes',
+		'.editorconfig',
+		'.eslintrc',
+		'.prettierrc',
+		'.babelrc',
+		'.npmrc',
+		'.yarnrc',
+	];
 
-  const ext = path.extname(fileName).toLowerCase();
-  return textExtensions.includes(ext) || !path.extname(fileName); // Include files without extension
+	const ext = path.extname(fileName).toLowerCase();
+	return textExtensions.includes(ext) || !path.extname(fileName); // Include files without extension
 }
 
 /**
@@ -171,16 +173,16 @@ function isTextFile(fileName: string): boolean {
  * @returns Formatted content string
  */
 export function formatDirectoryContent(
-  dirPath: string,
-  files: Array<{ name: string; content: string }>
+	dirPath: string,
+	files: Array<{ name: string; content: string }>,
 ): string {
-  const sections = [`# Rules from ${dirPath}:`];
+	const sections = [`# Rules from ${dirPath}:`];
 
-  for (const file of files) {
-    sections.push(`\n## ${file.name}\n\n${file.content}`);
-  }
+	for (const file of files) {
+		sections.push(`\n## ${file.name}\n\n${file.content}`);
+	}
 
-  return sections.join("");
+	return sections.join('');
 }
 
 /**
@@ -190,40 +192,40 @@ export function formatDirectoryContent(
  * @returns Object with global and project content, plus merged content
  */
 export async function loadConfiguration(
-  relativePath: string,
-  cwd: string
+	relativePath: string,
+	cwd: string,
 ): Promise<{
-  global: string | null;
-  project: string | null;
-  merged: string;
+	global: string | null;
+	project: string | null;
+	merged: string;
 }> {
-  const globalDir = getGlobalRooDirectory();
-  const projectDir = getProjectRooDirectoryForCwd(cwd);
+	const globalDir = getGlobalRooDirectory();
+	const projectDir = getProjectRooDirectoryForCwd(cwd);
 
-  const globalFilePath = path.join(globalDir, relativePath);
-  const projectFilePath = path.join(projectDir, relativePath);
+	const globalFilePath = path.join(globalDir, relativePath);
+	const projectFilePath = path.join(projectDir, relativePath);
 
-  // Read global configuration
-  const globalContent = await readFileIfExists(globalFilePath);
+	// Read global configuration
+	const globalContent = await readFileIfExists(globalFilePath);
 
-  // Read project-local configuration
-  const projectContent = await readFileIfExists(projectFilePath);
+	// Read project-local configuration
+	const projectContent = await readFileIfExists(projectFilePath);
 
-  // Merge configurations - project overrides global
-  let merged = "";
-  if (globalContent) {
-    merged += globalContent;
-  }
-  if (projectContent) {
-    if (merged) {
-      merged += "\n\n# Project-specific rules (override global):\n\n";
-    }
-    merged += projectContent;
-  }
+	// Merge configurations - project overrides global
+	let merged = '';
+	if (globalContent) {
+		merged += globalContent;
+	}
+	if (projectContent) {
+		if (merged) {
+			merged += '\n\n# Project-specific rules (override global):\n\n';
+		}
+		merged += projectContent;
+	}
 
-  return {
-    global: globalContent,
-    project: projectContent,
-    merged,
-  };
+	return {
+		global: globalContent,
+		project: projectContent,
+		merged,
+	};
 }

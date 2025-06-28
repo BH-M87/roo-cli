@@ -6,7 +6,7 @@ import { ToolArgs } from './types';
  * @returns 工具描述
  */
 export function getExecuteCommandDescription(args: ToolArgs): string {
-  return `## execute_command
+	return `## execute_command
 Description: Execute a command in the terminal.
 Parameters:
 - command: (required) The command to execute.

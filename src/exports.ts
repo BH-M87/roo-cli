@@ -4,48 +4,48 @@
  */
 
 // Core functions
-export { handleNewTask, executeTask } from "./core/task";
+export { handleNewTask, executeTask } from './core/task';
 
 // Classes
-export { Provider } from "./core/provider";
-export { TaskManager } from "./core/task-manager";
-export { ContinuousExecutor } from "./core/continuous-executor";
-export { SingleStepExecutor } from "./core/single-step-executor";
+export { Provider } from './core/provider';
+export { TaskManager } from './core/task-manager';
+export { ContinuousExecutor } from './core/continuous-executor';
+export { SingleStepExecutor } from './core/single-step-executor';
 
 // Configuration
-export { getApiConfig, ApiProvider, DEFAULT_CONFIG } from "./api/config";
-export { setApiConfig } from "./core/tools/newTaskTool";
+export { getApiConfig, ApiProvider, DEFAULT_CONFIG } from './api/config';
+export { setApiConfig } from './core/tools/newTaskTool';
 export {
-  readTaskConfig,
-  readProviderProfiles,
-  readGlobalSettings,
-  getMergedCustomModes,
-  resolveFilePath,
-  getCurrentWorkingDirectory,
-} from "./config/settings";
-export { DEFAULT_TASK_CONFIG } from "./config/constants";
+	readTaskConfig,
+	readProviderProfiles,
+	readGlobalSettings,
+	getMergedCustomModes,
+	resolveFilePath,
+	getCurrentWorkingDirectory,
+} from './config/settings';
+export { DEFAULT_TASK_CONFIG } from './config/constants';
 
 // Types
 export {
-  ApiConfig,
-  TaskConfig,
-  GlobalSettings,
-  ProviderProfile,
-  TaskResult,
-  HandleNewTaskParams,
-  CommandOptions,
-  StructuredExecutionResult,
-  ExecutionStep,
-  LogEntry,
-} from "./types";
+	ApiConfig,
+	TaskConfig,
+	GlobalSettings,
+	ProviderProfile,
+	TaskResult,
+	HandleNewTaskParams,
+	CommandOptions,
+	StructuredExecutionResult,
+	ExecutionStep,
+	LogEntry,
+} from './types';
 
 // Utilities
-export { StructuredOutputManager } from "./utils/structured-output";
+export { StructuredOutputManager } from './utils/structured-output';
 export {
-  FileOutputManager,
-  parseStructuredOutputOption,
-  createFileOutputManager,
-} from "./utils/file-output-manager";
+	FileOutputManager,
+	parseStructuredOutputOption,
+	createFileOutputManager,
+} from './utils/file-output-manager';
 
 // Logging
-export { logger, LogLevel, setLogLevel } from "./utils/logger";
+export { logger, LogLevel, setLogLevel } from './utils/logger';

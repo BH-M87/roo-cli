@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取文件比较工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types"
  * @returns 工具描述
  */
 export function getDiffFilesDescription(args: ToolArgs): string {
-  return `## diff_files
+	return `## diff_files
 Description: Compare two files and show the differences between them. This tool is useful for understanding changes between file versions or comparing similar files.
 
 Parameters:
@@ -26,5 +26,5 @@ Example:
 <file1>src/components/Button.js</file1>
 <file2>src/components/Button.tsx</file2>
 </diff_files>
-`
+`;
 }

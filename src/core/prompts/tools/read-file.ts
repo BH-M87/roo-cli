@@ -6,7 +6,7 @@ import { ToolArgs } from './types';
  * @returns 工具描述
  */
 export function getReadFileDescription(args: ToolArgs): string {
-  return `## read_file
+	return `## read_file
 Description: Read the contents of a file.
 Parameters:
 - path: (required) The path to the file to read. This can be a relative path from the current working directory (${args.cwd}) or an absolute path.

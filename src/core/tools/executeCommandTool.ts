@@ -1,7 +1,7 @@
-import { exec } from "child_process";
-import { logger } from "../../utils/logger";
-import { promisify } from "util";
-import { ToolHandler } from "./types";
+import { exec } from 'child_process';
+import { logger } from '../../utils/logger';
+import { promisify } from 'util';
+import { ToolHandler } from './types';
 
 const execAsync = promisify(exec);
 
@@ -11,60 +11,60 @@ const execAsync = promisify(exec);
  * @returns 工具执行结果
  */
 export const executeCommandTool: ToolHandler = async ({ toolUse, cwd }) => {
-  const { params } = toolUse;
-  let command = params.command;
-  const customCwd = params.cwd;
+	const { params } = toolUse;
+	let command = params.command;
+	const customCwd = params.cwd;
 
-  if (!command) {
-    return 'Error: Missing required parameter "command"';
-  }
+	if (!command) {
+		return 'Error: Missing required parameter "command"';
+	}
 
-  try {
-    // 解析工作目录
-    const workingDir = customCwd ? customCwd : cwd;
+	try {
+		// 解析工作目录
+		const workingDir = customCwd ? customCwd : cwd;
 
-    logger.debug(`Executing command: ${command}`);
-    logger.debug(`Working directory: ${workingDir}`);
+		logger.debug(`Executing command: ${command}`);
+		logger.debug(`Working directory: ${workingDir}`);
 
-    // 执行命令
-    const { stdout, stderr } = await execAsync(command, { cwd: workingDir });
+		// 执行命令
+		const { stdout, stderr } = await execAsync(command, { cwd: workingDir });
 
-    // 构建结果
-    let result = `Command: ${command}\n`;
-    result += `Working directory: ${workingDir}\n\n`;
+		// 构建结果
+		let result = `Command: ${command}\n`;
+		result += `Working directory: ${workingDir}\n\n`;
 
-    if (stdout) {
-      result += `Output:\n\`\`\`\n${stdout}\n\`\`\`\n\n`;
-    }
+		if (stdout) {
+			result += `Output:\n\`\`\`\n${stdout}\n\`\`\`\n\n`;
+		}
 
-    if (stderr) {
-      result += `Error output:\n\`\`\`\n${stderr}\n\`\`\`\n`;
-    }
+		if (stderr) {
+			result += `Error output:\n\`\`\`\n${stderr}\n\`\`\`\n`;
+		}
 
-    return result;
-  } catch (error) {
-    if (error instanceof Error && "stderr" in error) {
-      const execError = error as Error & { stderr: string; stdout: string };
-      let result = `Command failed: ${command}\n\n`;
+		return result;
+	} catch (error) {
+		if (error instanceof Error && 'stderr' in error) {
+			const execError = error as Error & { stderr: string; stdout: string };
+			let result = `Command failed: ${command}\n\n`;
 
-      if (execError.stdout) {
-        result += `Output:\n\`\`\`\n${execError.stdout}\n\`\`\`\n\n`;
-      }
+			if (execError.stdout) {
+				result += `Output:\n\`\`\`\n${execError.stdout}\n\`\`\`\n\n`;
+			}
 
-      if (execError.stderr) {
-        result += `Error output:\n\`\`\`\n${execError.stderr}\n\`\`\`\n`;
-      }
+			if (execError.stderr) {
+				result += `Error output:\n\`\`\`\n${execError.stderr}\n\`\`\`\n`;
+			}
 
-      return result;
-    }
+			return result;
+		}
 
-    logger.error(
-      `Error executing command ${command}: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-    return `Error executing command ${command}: ${
-      error instanceof Error ? error.message : String(error)
-    }`;
-  }
+		logger.error(
+			`Error executing command ${command}: ${
+				error instanceof Error ? error.message : String(error)
+			}`,
+		);
+		return `Error executing command ${command}: ${
+			error instanceof Error ? error.message : String(error)
+		}`;
+	}
 };

@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types";
+import { ToolArgs } from './types';
 
 /**
  * 获取 semantic_code_search 工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types";
  * @returns 工具描述
  */
 export function getSemanticCodeSearchDescription(args: ToolArgs): string {
-  return `## semantic_code_search
+	return `## semantic_code_search
 Description: Perform a semantic search for code based on a natural language query. This tool uses code embeddings to find code that is semantically similar to the query, rather than just matching text patterns. It's useful for finding code that implements a specific functionality or follows a particular pattern, even if the exact keywords are not known.
 Parameters:
 - path: (required) The path of the directory to search in (relative to the current workspace directory ${args.cwd}). This directory will be recursively searched.

@@ -1,28 +1,28 @@
-import * as yaml from "js-yaml"
-import { logger } from "./logger"
+import * as yaml from 'js-yaml';
+import { logger } from './logger';
 
 /**
  * YAML parsing result
  */
 export interface YamlParseResult<T = any> {
-	success: boolean
-	data?: T
-	error?: string
-	lineNumber?: number
-	column?: number
+	success: boolean;
+	data?: T;
+	error?: string;
+	lineNumber?: number;
+	column?: number;
 }
 
 /**
  * YAML formatting options
  */
 export interface YamlFormatOptions {
-	indent?: number
-	lineWidth?: number
-	noRefs?: boolean
-	noCompatMode?: boolean
-	condenseFlow?: boolean
-	quotingType?: '"' | "'"
-	forceQuotes?: boolean
+	indent?: number;
+	lineWidth?: number;
+	noRefs?: boolean;
+	noCompatMode?: boolean;
+	condenseFlow?: boolean;
+	quotingType?: '"' | "'";
+	forceQuotes?: boolean;
 }
 
 /**
@@ -31,53 +31,59 @@ export interface YamlFormatOptions {
  * @param filename Optional filename for better error messages
  * @returns Parse result with success status and data or error details
  */
-export function safeParseYaml<T = any>(content: string, filename?: string): YamlParseResult<T> {
+export function safeParseYaml<T = any>(
+	content: string,
+	filename?: string,
+): YamlParseResult<T> {
 	try {
-		if (!content || content.trim() === "") {
+		if (!content || content.trim() === '') {
 			return {
 				success: false,
-				error: "Empty YAML content",
-			}
+				error: 'Empty YAML content',
+			};
 		}
 
 		const data = yaml.load(content, {
 			filename,
 			onWarning: (warning: any) => {
-				logger.warn(`YAML warning in ${filename || "content"}: ${warning.message}`)
+				logger.warn(
+					`YAML warning in ${filename || 'content'}: ${warning.message}`,
+				);
 			},
-		}) as T
+		}) as T;
 
 		return {
 			success: true,
 			data,
-		}
+		};
 	} catch (error) {
-		let errorMessage = "Unknown YAML parsing error"
-		let lineNumber: number | undefined
-		let column: number | undefined
+		let errorMessage = 'Unknown YAML parsing error';
+		let lineNumber: number | undefined;
+		let column: number | undefined;
 
 		if (error instanceof yaml.YAMLException) {
-			errorMessage = error.message
+			errorMessage = error.message;
 			if ((error as any).mark) {
-				lineNumber = (error as any).mark.line + 1 // Convert to 1-based line numbers
-				column = (error as any).mark.column + 1 // Convert to 1-based column numbers
+				lineNumber = (error as any).mark.line + 1; // Convert to 1-based line numbers
+				column = (error as any).mark.column + 1; // Convert to 1-based column numbers
 			}
 		} else if (error instanceof Error) {
-			errorMessage = error.message
+			errorMessage = error.message;
 		}
 
-		const contextInfo = filename ? ` in ${filename}` : ""
-		const locationInfo = lineNumber && column ? ` at line ${lineNumber}, column ${column}` : ""
-		const fullError = `YAML parsing error${contextInfo}${locationInfo}: ${errorMessage}`
+		const contextInfo = filename ? ` in ${filename}` : '';
+		const locationInfo =
+			lineNumber && column ? ` at line ${lineNumber}, column ${column}` : '';
+		const fullError = `YAML parsing error${contextInfo}${locationInfo}: ${errorMessage}`;
 
-		logger.error(fullError)
+		logger.error(fullError);
 
 		return {
 			success: false,
 			error: fullError,
 			lineNumber,
 			column,
-		}
+		};
 	}
 }
 
@@ -87,7 +93,10 @@ export function safeParseYaml<T = any>(content: string, filename?: string): Yaml
  * @param options YAML formatting options
  * @returns Stringified YAML or error message
  */
-export function safeStringifyYaml(data: any, options: YamlFormatOptions = {}): YamlParseResult<string> {
+export function safeStringifyYaml(
+	data: any,
+	options: YamlFormatOptions = {},
+): YamlParseResult<string> {
 	try {
 		const yamlOptions: yaml.DumpOptions = {
 			indent: options.indent || 2,
@@ -97,28 +106,28 @@ export function safeStringifyYaml(data: any, options: YamlFormatOptions = {}): Y
 			condenseFlow: options.condenseFlow || false,
 			quotingType: options.quotingType || '"',
 			forceQuotes: options.forceQuotes || false,
-		}
+		};
 
-		const yamlString = yaml.dump(data, yamlOptions)
+		const yamlString = yaml.dump(data, yamlOptions);
 
 		return {
 			success: true,
 			data: yamlString,
-		}
+		};
 	} catch (error) {
-		let errorMessage = "Unknown YAML stringification error"
+		let errorMessage = 'Unknown YAML stringification error';
 
 		if (error instanceof Error) {
-			errorMessage = error.message
+			errorMessage = error.message;
 		}
 
-		const fullError = `YAML stringification error: ${errorMessage}`
-		logger.error(fullError)
+		const fullError = `YAML stringification error: ${errorMessage}`;
+		logger.error(fullError);
 
 		return {
 			success: false,
 			error: fullError,
-		}
+		};
 	}
 }
 
@@ -128,14 +137,17 @@ export function safeStringifyYaml(data: any, options: YamlFormatOptions = {}): Y
  * @param filename Optional filename for better error messages
  * @returns Validation result with detailed error information
  */
-export function validateYaml(content: string, filename?: string): YamlParseResult<boolean> {
-	const parseResult = safeParseYaml(content, filename)
+export function validateYaml(
+	content: string,
+	filename?: string,
+): YamlParseResult<boolean> {
+	const parseResult = safeParseYaml(content, filename);
 
 	if (parseResult.success) {
 		return {
 			success: true,
 			data: true,
-		}
+		};
 	}
 
 	return {
@@ -143,7 +155,7 @@ export function validateYaml(content: string, filename?: string): YamlParseResul
 		error: parseResult.error,
 		lineNumber: parseResult.lineNumber,
 		column: parseResult.column,
-	}
+	};
 }
 
 /**
@@ -152,23 +164,23 @@ export function validateYaml(content: string, filename?: string): YamlParseResul
  * @returns Fixed YAML content or original if no fixes needed
  */
 export function fixCommonYamlIssues(content: string): string {
-	let fixed = content
+	let fixed = content;
 
 	// Fix common indentation issues
-	fixed = fixed.replace(/\t/g, "  ") // Replace tabs with spaces
+	fixed = fixed.replace(/\t/g, '  '); // Replace tabs with spaces
 
 	// Fix trailing spaces
-	fixed = fixed.replace(/ +$/gm, "")
+	fixed = fixed.replace(/ +$/gm, '');
 
 	// Fix multiple consecutive empty lines
-	fixed = fixed.replace(/\n\n\n+/g, "\n\n")
+	fixed = fixed.replace(/\n\n\n+/g, '\n\n');
 
 	// Ensure file ends with newline
-	if (fixed && !fixed.endsWith("\n")) {
-		fixed += "\n"
+	if (fixed && !fixed.endsWith('\n')) {
+		fixed += '\n';
 	}
 
-	return fixed
+	return fixed;
 }
 
 /**
@@ -177,38 +189,46 @@ export function fixCommonYamlIssues(content: string): string {
  * @returns Array of helpful suggestions
  */
 export function getYamlErrorSuggestions(error: string): string[] {
-	const suggestions: string[] = []
+	const suggestions: string[] = [];
 
-	if (error.includes("tab character")) {
-		suggestions.push("Replace tab characters with spaces (YAML doesn't allow tabs for indentation)")
+	if (error.includes('tab character')) {
+		suggestions.push(
+			"Replace tab characters with spaces (YAML doesn't allow tabs for indentation)",
+		);
 	}
 
-	if (error.includes("expected <block end>")) {
-		suggestions.push("Check indentation - all items at the same level should have the same indentation")
+	if (error.includes('expected <block end>')) {
+		suggestions.push(
+			'Check indentation - all items at the same level should have the same indentation',
+		);
 	}
 
-	if (error.includes("found character that cannot start any token")) {
-		suggestions.push("Check for special characters that need to be quoted")
+	if (error.includes('found character that cannot start any token')) {
+		suggestions.push('Check for special characters that need to be quoted');
 	}
 
 	if (error.includes("could not find expected ':'")) {
-		suggestions.push("Make sure all keys are followed by a colon and space (key: value)")
+		suggestions.push(
+			'Make sure all keys are followed by a colon and space (key: value)',
+		);
 	}
 
-	if (error.includes("mapping values are not allowed here")) {
-		suggestions.push("Check for missing quotes around string values that contain colons")
+	if (error.includes('mapping values are not allowed here')) {
+		suggestions.push(
+			'Check for missing quotes around string values that contain colons',
+		);
 	}
 
-	if (error.includes("found undefined alias")) {
-		suggestions.push("Check YAML anchors and references (&anchor, *reference)")
+	if (error.includes('found undefined alias')) {
+		suggestions.push('Check YAML anchors and references (&anchor, *reference)');
 	}
 
 	if (suggestions.length === 0) {
-		suggestions.push("Check YAML syntax and indentation")
-		suggestions.push("Use a YAML validator to identify specific issues")
+		suggestions.push('Check YAML syntax and indentation');
+		suggestions.push('Use a YAML validator to identify specific issues');
 	}
 
-	return suggestions
+	return suggestions;
 }
 
 /**
@@ -218,30 +238,34 @@ export function getYamlErrorSuggestions(error: string): string[] {
  * @param filename Optional filename
  * @returns Formatted error message with context
  */
-export function formatYamlError(error: string, content: string, filename?: string): string {
-	const suggestions = getYamlErrorSuggestions(error)
-	const lines = content.split("\n")
+export function formatYamlError(
+	error: string,
+	content: string,
+	filename?: string,
+): string {
+	const suggestions = getYamlErrorSuggestions(error);
+	const lines = content.split('\n');
 
-	let formattedError = `YAML Error${filename ? ` in ${filename}` : ""}:\n${error}\n`
+	let formattedError = `YAML Error${filename ? ` in ${filename}` : ''}:\n${error}\n`;
 
 	// Extract line number from error if available
-	const lineMatch = error.match(/line (\d+)/)
+	const lineMatch = error.match(/line (\d+)/);
 	if (lineMatch) {
-		const lineNum = parseInt(lineMatch[1], 10)
-		const contextStart = Math.max(0, lineNum - 3)
-		const contextEnd = Math.min(lines.length, lineNum + 2)
+		const lineNum = parseInt(lineMatch[1], 10);
+		const contextStart = Math.max(0, lineNum - 3);
+		const contextEnd = Math.min(lines.length, lineNum + 2);
 
-		formattedError += "\nContext:\n"
+		formattedError += '\nContext:\n';
 		for (let i = contextStart; i < contextEnd; i++) {
-			const marker = i === lineNum - 1 ? ">>> " : "    "
-			formattedError += `${marker}${i + 1}: ${lines[i]}\n`
+			const marker = i === lineNum - 1 ? '>>> ' : '    ';
+			formattedError += `${marker}${i + 1}: ${lines[i]}\n`;
 		}
 	}
 
-	formattedError += "\nSuggestions:\n"
+	formattedError += '\nSuggestions:\n';
 	suggestions.forEach((suggestion, index) => {
-		formattedError += `${index + 1}. ${suggestion}\n`
-	})
+		formattedError += `${index + 1}. ${suggestion}\n`;
+	});
 
-	return formattedError
+	return formattedError;
 }

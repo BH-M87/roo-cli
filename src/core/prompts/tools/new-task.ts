@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取新任务工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types"
  * @returns 工具描述
  */
 export function getNewTaskDescription(_args: ToolArgs): string {
-  return `## new_task
+	return `## new_task
 Description: Create a new task with a specified starting mode and initial message. This tool instructs the system to create a new task instance in the given mode with the provided message.
 
 Parameters:
@@ -26,5 +26,5 @@ Example:
 <mode>debug</mode>
 <message>Debug the authentication issue in the login component.</message>
 </new_task>
-`
+`;
 }

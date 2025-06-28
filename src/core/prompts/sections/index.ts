@@ -1,7 +1,7 @@
-export { getRulesSection } from "./rules"
-export { getToolUseSection } from "./tool-use"
-export { getToolUseGuidelinesSection } from "./tool-use-guidelines"
-export { getCapabilitiesSection } from "./capabilities"
-export { markdownFormattingSection } from "./markdown-formatting"
-export { getObjectiveSection } from "./objective"
-export { getModesSection } from "./modes"
+export { getRulesSection } from './rules';
+export { getToolUseSection } from './tool-use';
+export { getToolUseGuidelinesSection } from './tool-use-guidelines';
+export { getCapabilitiesSection } from './capabilities';
+export { markdownFormattingSection } from './markdown-formatting';
+export { getObjectiveSection } from './objective';
+export { getModesSection } from './modes';

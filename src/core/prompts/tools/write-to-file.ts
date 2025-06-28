@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types";
+import { ToolArgs } from './types';
 
 /**
  * 获取 write_to_file 工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types";
  * @returns 工具描述
  */
 export function getWriteToFileDescription(args: ToolArgs): string {
-  return `## write_to_file
+	return `## write_to_file
 Description: Request to write full content to a file at the specified path. If the file exists, it will be overwritten with the provided content. If the file doesn't exist, it will be created. This tool will automatically create any directories needed to write the file.
 Parameters:
 - path: (required) The path of the file to write to (relative to the current workspace directory ${args.cwd})

@@ -22,5 +22,5 @@ Mode Selection Guidelines:
 - Use "auto" mode when you want to execute tasks automatically without user confirmation
 
 If the user asks you to create or edit a new mode for this project, you should explain that custom modes can be created by providing a custom role definition using the --role-definition parameter.
-`
+`;
 }

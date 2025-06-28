@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取浏览器操作工具的描述
@@ -7,7 +7,7 @@ import { ToolArgs } from "./types"
  */
 export function getBrowserActionDescription(args: ToolArgs): string {
 	if (!args.supportsComputerUse) {
-		return `## browser_action\nDescription: Browser actions are not supported in this environment.`
+		return `## browser_action\nDescription: Browser actions are not supported in this environment.`;
 	}
 	return `## browser_action
 Description: Request to interact with a Puppeteer-controlled browser. Every action, except \`close\`, will be responded to with a screenshot of the browser's current state, along with any new console logs. You may only perform one browser action per message, and wait for the user's response including a screenshot and logs to determine the next action.
@@ -60,5 +60,5 @@ Example: Requesting to click on the element at coordinates 450,300
 <browser_action>
 <action>click</action>
 <coordinate>450,300</coordinate>
-</browser_action>`
+</browser_action>`;
 }

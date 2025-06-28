@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取列出代码定义名称工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types"
  * @returns 工具描述
  */
 export function getListCodeDefinitionNamesDescription(args: ToolArgs): string {
-  return `## list_code_definition_names
+	return `## list_code_definition_names
 Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 
 Parameters:
@@ -27,5 +27,5 @@ Examples:
 2. List definitions from all files in a directory:
 <list_code_definition_names>
 <path>src/</path>
-</list_code_definition_names>`
+</list_code_definition_names>`;
 }

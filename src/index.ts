@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { Command } from "commander"
-import dotenv from "dotenv"
-import fs from "fs-extra"
+import { Command } from 'commander';
+import dotenv from 'dotenv';
+import fs from 'fs-extra';
 
 import {
 	readTaskConfig,
@@ -10,144 +10,179 @@ import {
 	readGlobalSettings,
 	getMergedCustomModes,
 	resolveFilePath,
-} from "./config/settings"
-import { DEFAULT_TASK_CONFIG } from "./config/constants"
-import { createServer } from "./server"
-import { handleNewTask } from "./core/task"
+} from './config/settings';
+import { DEFAULT_TASK_CONFIG } from './config/constants';
+import { createServer } from './server';
+import { handleNewTask } from './core/task';
 
-import { CommandOptions, TaskConfig } from "./types"
-import { McpStdioServer } from "./mcp/stdio-server"
-import { McpSseServer } from "./mcp/sse-server"
-import { setApiConfig } from "./core/tools/newTaskTool"
-import { getApiConfig } from "./api/config"
-import { VERSION } from "./config/version"
-import { logger, LogLevel, setLogLevel } from "./utils/logger"
-import { Provider } from "./core/provider"
-import { parseStructuredOutputOption } from "./utils/file-output-manager"
-import { createShareCommand } from "./commands/share"
-import { createImportSettingsCommand } from "./commands/import-settings"
-import { createRAGConfigCommand } from "./commands/rag-config"
+import { CommandOptions, TaskConfig } from './types';
+import { McpStdioServer } from './mcp/stdio-server';
+import { McpSseServer } from './mcp/sse-server';
+import { setApiConfig } from './core/tools/newTaskTool';
+import { getApiConfig } from './api/config';
+import { VERSION } from './config/version';
+import { logger, LogLevel, setLogLevel } from './utils/logger';
+import { Provider } from './core/provider';
+import { parseStructuredOutputOption } from './utils/file-output-manager';
+import { createShareCommand } from './commands/share';
+import { createImportSettingsCommand } from './commands/import-settings';
+import { createRAGConfigCommand } from './commands/rag-config';
 
 // Load environment variables
-dotenv.config()
+dotenv.config();
 
-const program = new Command()
+const program = new Command();
 
-program.name("roo").description("Roo CLI - Execute AI tasks from the command line").version(VERSION)
+program
+	.name('roo')
+	.description('Roo CLI - Execute AI tasks from the command line')
+	.version(VERSION);
 
 // New task command
 program
-	.command("new [prompt]")
-	.description("Create a new task")
-	.option("-w, --workspace <path>", "Workspace directory for file operations (default: current directory)")
-	.option("-m, --mode <mode>", "Mode to use (e.g., auto, code, ask)")
-	.option("-c, --config-file <path>", "Path to task configuration file")
-	.option("-p, --provider-file <path>", "Path to provider profiles file")
-	.option("-s, --settings-file <path>", "Path to global settings file")
-	.option("-o, --modes-file <path>", "Path to custom modes file")
-	.option("-i, --input-file <path>", "Path to a file containing the prompt/requirements")
-	.option("--log-level <level>", "Set log level (debug=0, info=1, success=2, warn=3, error=4, always=5, or 0-5)", "1")
-	.option("--continuous", "Enable continuous execution mode")
-	.option("--max-steps <steps>", "Maximum number of steps for continuous mode", "100")
-	.option("--auto", "Enable auto mode (no user confirmation required)")
-	.option("--only-return-last-result", "Only return the last result (suppress intermediate result)")
-	.option("--api-provider <provider>", "API provider to use (anthropic, openai)")
-	.option("--openai-api-key <key>", "OpenAI API key")
-	.option("--openai-base-url <url>", "OpenAI API base URL")
-	.option("--openai-model <model>", "OpenAI model ID")
-	.option("--stream-mode", "Enable stream mode for OpenAI API calls")
-	.option("--anthropic-api-key <key>", "Anthropic API key")
-	.option("--anthropic-model <model>", "Anthropic model ID")
-	.option("--rules <rules>", "Additional rules to supplement the system prompt")
-	.option("--custom-instructions <instructions>", "Custom instructions to add to the system prompt")
-	.option("--role-definition <definition>", "Custom role definition to override the default one")
-	.option("--continue-from-task <taskId>", "Continue from a previous task")
+	.command('new [prompt]')
+	.description('Create a new task')
+	.option(
+		'-w, --workspace <path>',
+		'Workspace directory for file operations (default: current directory)',
+	)
+	.option('-m, --mode <mode>', 'Mode to use (e.g., auto, code, ask)')
+	.option('-c, --config-file <path>', 'Path to task configuration file')
+	.option('-p, --provider-file <path>', 'Path to provider profiles file')
+	.option('-s, --settings-file <path>', 'Path to global settings file')
+	.option('-o, --modes-file <path>', 'Path to custom modes file')
+	.option(
+		'-i, --input-file <path>',
+		'Path to a file containing the prompt/requirements',
+	)
+	.option(
+		'--log-level <level>',
+		'Set log level (debug=0, info=1, success=2, warn=3, error=4, always=5, or 0-5)',
+		'1',
+	)
+	.option('--continuous', 'Enable continuous execution mode')
+	.option(
+		'--max-steps <steps>',
+		'Maximum number of steps for continuous mode',
+		'100',
+	)
+	.option('--auto', 'Enable auto mode (no user confirmation required)')
+	.option(
+		'--only-return-last-result',
+		'Only return the last result (suppress intermediate result)',
+	)
+	.option(
+		'--api-provider <provider>',
+		'API provider to use (anthropic, openai)',
+	)
+	.option('--openai-api-key <key>', 'OpenAI API key')
+	.option('--openai-base-url <url>', 'OpenAI API base URL')
+	.option('--openai-model <model>', 'OpenAI model ID')
+	.option('--stream-mode', 'Enable stream mode for OpenAI API calls')
+	.option('--anthropic-api-key <key>', 'Anthropic API key')
+	.option('--anthropic-model <model>', 'Anthropic model ID')
+	.option('--rules <rules>', 'Additional rules to supplement the system prompt')
+	.option(
+		'--custom-instructions <instructions>',
+		'Custom instructions to add to the system prompt',
+	)
+	.option(
+		'--role-definition <definition>',
+		'Custom role definition to override the default one',
+	)
+	.option('--continue-from-task <taskId>', 'Continue from a previous task')
 	// Convert kebab-case to camelCase for continueFromTask
-	.on("option:continue-from-task", function (this: Command, val: string) {
-		this.opts().continueFromTask = val
+	.on('option:continue-from-task', function (this: Command, val: string) {
+		this.opts().continueFromTask = val;
 	})
 	.option(
-		"--structured-output [path]",
-		"Enable structured JSON output with detailed execution information. If path is provided, output to file instead of console",
+		'--structured-output [path]',
+		'Enable structured JSON output with detailed execution information. If path is provided, output to file instead of console',
 	)
 	.action(async (promptArg, options: CommandOptions) => {
 		try {
 			// 设置日志级别
 			if (options.logLevel) {
 				// 尝试将日志级别解析为数字
-				const logLevelValue = parseInt(options.logLevel, 10)
+				const logLevelValue = parseInt(options.logLevel, 10);
 
 				if (!isNaN(logLevelValue) && logLevelValue >= 0 && logLevelValue <= 5) {
 					// 如果是有效的数字，直接设置
-					setLogLevel(logLevelValue)
+					setLogLevel(logLevelValue);
 				} else {
 					// 使用 logger.setLevel 方法设置日志级别
-					logger.setLevel(options.logLevel)
+					logger.setLevel(options.logLevel);
 				}
 			} else {
 				// 默认为 INFO 级别
-				setLogLevel(LogLevel.INFO)
+				setLogLevel(LogLevel.INFO);
 			}
 
 			// Get prompt from argument, input file, or interactive input
-			let prompt = promptArg || options.prompt
+			let prompt = promptArg || options.prompt;
 
 			// If input file is provided, read prompt from file
 			if (options.inputFile) {
 				try {
 					// 使用 resolveFilePath 确保路径是绝对的
-					const resolvedInputPath = resolveFilePath(options.inputFile)
-					logger.info(`Reading prompt from file: ${resolvedInputPath}`)
+					const resolvedInputPath = resolveFilePath(options.inputFile);
+					logger.info(`Reading prompt from file: ${resolvedInputPath}`);
 
 					// 读取文件内容
-					const fileContent = await fs.readFile(resolvedInputPath, "utf-8")
+					const fileContent = await fs.readFile(resolvedInputPath, 'utf-8');
 					if (fileContent.trim()) {
-						prompt = fileContent.trim()
-						logger.debug(`Prompt from file: ${prompt.substring(0, 100)}${prompt.length > 100 ? `...` : ""}`)
+						prompt = fileContent.trim();
+						logger.debug(
+							`Prompt from file: ${prompt.substring(0, 100)}${prompt.length > 100 ? `...` : ''}`,
+						);
 					} else {
-						logger.warn(`Input file is empty: ${options.inputFile}`)
+						logger.warn(`Input file is empty: ${options.inputFile}`);
 					}
 				} catch (error) {
-					logger.error(`Error reading input file: ${options.inputFile}`)
-					logger.error(error instanceof Error ? error.message : String(error))
-					process.exit(1)
+					logger.error(`Error reading input file: ${options.inputFile}`);
+					logger.error(error instanceof Error ? error.message : String(error));
+					process.exit(1);
 				}
 			}
 
 			if (!prompt) {
-				logger.error("Error: Prompt is required (provide as argument, --input-file, or --prompt)")
-				process.exit(1)
+				logger.error(
+					'Error: Prompt is required (provide as argument, --input-file, or --prompt)',
+				);
+				process.exit(1);
 			}
 
 			// Load configuration
-			const taskConfig = await loadTaskConfig(prompt, options)
-			const providerProfiles = await readProviderProfiles(options.providerFile)
-			const settings = await readGlobalSettings(options.settingsFile)
-			await getMergedCustomModes(settings, options.modesFile)
+			const taskConfig = await loadTaskConfig(prompt, options);
+			const providerProfiles = await readProviderProfiles(options.providerFile);
+			const settings = await readGlobalSettings(options.settingsFile);
+			await getMergedCustomModes(settings, options.modesFile);
 
 			// Get API configuration from command line options or provider profiles
-			let apiConfig = getApiConfig(options)
+			let apiConfig = getApiConfig(options);
 
 			// If no API config from options, use the one from provider profiles
 			if (!apiConfig) {
-				const currentApiConfigName = providerProfiles.currentApiConfigName
-				apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
+				const currentApiConfigName = providerProfiles.currentApiConfigName;
+				apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
 
 				if (!apiConfig) {
-					logger.error(`Error: API configuration '${currentApiConfigName}' not found`)
-					process.exit(1)
+					logger.error(
+						`Error: API configuration '${currentApiConfigName}' not found`,
+					);
+					process.exit(1);
 				}
 			}
 
 			// 设置 API 配置，以便工具可以使用
-			setApiConfig(apiConfig)
+			setApiConfig(apiConfig);
 
-			logger.info(`Using API provider: ${apiConfig.apiProvider}`)
-			logger.info(`Using mode: ${taskConfig.mode}`)
-			logger.info(`Working directory: ${taskConfig.cwd || process.cwd()}`)
+			logger.info(`Using API provider: ${apiConfig.apiProvider}`);
+			logger.info(`Using mode: ${taskConfig.mode}`);
+			logger.info(`Working directory: ${taskConfig.cwd || process.cwd()}`);
 
 			// Execute task
-			logger.info("Executing task...")
+			logger.info('Executing task...');
 			const result = await handleNewTask({
 				prompt: taskConfig.message,
 				mode: taskConfig.mode,
@@ -164,29 +199,37 @@ program
 				onlyReturnLastResult: options.onlyReturnLastResult,
 				structuredOutput: options.structuredOutput,
 				onStructuredUpdate: options.structuredOutput
-					? (data) => {
+					? data => {
 							// 解析结构化输出选项
-							const structuredConfig = parseStructuredOutputOption(options.structuredOutput)
+							const structuredConfig = parseStructuredOutputOption(
+								options.structuredOutput,
+							);
 
 							// 如果是控制台输出模式且启用了调试，则输出到控制台
-							if (!structuredConfig.filePath && options.logLevel === "debug") {
-								logger.debug("Structured update: " + JSON.stringify(data, null, 2))
+							if (!structuredConfig.filePath && options.logLevel === 'debug') {
+								logger.debug(
+									'Structured update: ' + JSON.stringify(data, null, 2),
+								);
 							}
 							// 文件输出由 task.ts 中的 fileOutputManager 处理
 						}
 					: undefined,
-			})
+			});
 
 			// 解析结构化输出选项
-			const structuredConfig = parseStructuredOutputOption(options.structuredOutput)
+			const structuredConfig = parseStructuredOutputOption(
+				options.structuredOutput,
+			);
 
 			if (result.success) {
 				if (structuredConfig.enabled) {
 					if (structuredConfig.filePath) {
 						// 文件输出模式 - 只显示简单的成功消息和文件路径
-						logger.success("Task completed successfully")
-						logger.success(`Task ID: ${result.taskId}`)
-						logger.success(`Structured output written to: ${structuredConfig.filePath}`)
+						logger.success('Task completed successfully');
+						logger.success(`Task ID: ${result.taskId}`);
+						logger.success(
+							`Structured output written to: ${structuredConfig.filePath}`,
+						);
 					} else {
 						// 控制台输出模式 - 输出完整的结构化JSON结果
 						const structuredResult = {
@@ -194,22 +237,24 @@ program
 							taskId: result.taskId,
 							output: result.output,
 							structured: result.structured,
-						}
-						console.log(JSON.stringify(structuredResult, null, 2))
+						};
+						console.log(JSON.stringify(structuredResult, null, 2));
 					}
 				} else {
 					// 输出常规结果
-					logger.always("\n" + result.output + "\n")
-					logger.success("Task completed successfully")
-					logger.success(`Task ID: ${result.taskId}`)
+					logger.always('\n' + result.output + '\n');
+					logger.success('Task completed successfully');
+					logger.success(`Task ID: ${result.taskId}`);
 				}
 			} else {
 				if (structuredConfig.enabled) {
 					if (structuredConfig.filePath) {
 						// 文件输出模式 - 只显示简单的错误消息和文件路径
-						logger.error(`Task failed: ${result.error}`)
-						logger.error(`Task ID: ${result.taskId}`)
-						logger.error(`Structured output written to: ${structuredConfig.filePath}`)
+						logger.error(`Task failed: ${result.error}`);
+						logger.error(`Task ID: ${result.taskId}`);
+						logger.error(
+							`Structured output written to: ${structuredConfig.filePath}`,
+						);
 					} else {
 						// 控制台输出模式 - 输出完整的结构化JSON错误结果
 						const structuredResult = {
@@ -218,274 +263,321 @@ program
 							output: result.output,
 							error: result.error,
 							structured: result.structured,
-						}
-						console.log(JSON.stringify(structuredResult, null, 2))
+						};
+						console.log(JSON.stringify(structuredResult, null, 2));
 					}
 				} else {
 					// 输出常规错误
-					logger.error(`Task failed: ${result.error}`)
-					logger.error(`Task ID: ${result.taskId}`)
+					logger.error(`Task failed: ${result.error}`);
+					logger.error(`Task ID: ${result.taskId}`);
 				}
 			}
 		} catch (error) {
-			logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			logger.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 // Tool command
 program
-	.command("tool <name>")
-	.description("Execute a tool")
-	.option("-p, --params <json>", "Tool parameters in JSON format")
-	.option("-c, --cwd <path>", "Working directory")
-	.option("--provider-file <path>", "Path to provider profiles file")
-	.option("--settings-file <path>", "Path to global settings file")
-	.option("--modes-file <path>", "Path to custom modes file")
-	.option("--log-level <level>", "Log level (debug, info, warn, error, always)", "info")
+	.command('tool <name>')
+	.description('Execute a tool')
+	.option('-p, --params <json>', 'Tool parameters in JSON format')
+	.option('-c, --cwd <path>', 'Working directory')
+	.option('--provider-file <path>', 'Path to provider profiles file')
+	.option('--settings-file <path>', 'Path to global settings file')
+	.option('--modes-file <path>', 'Path to custom modes file')
+	.option(
+		'--log-level <level>',
+		'Log level (debug, info, warn, error, always)',
+		'info',
+	)
 	.action(async (name, options) => {
 		try {
 			// Parse parameters
-			let params = {}
+			let params = {};
 			if (options.params) {
 				try {
-					params = JSON.parse(options.params)
+					params = JSON.parse(options.params);
 				} catch (error) {
-					logger.error(`Error parsing parameters: ${error instanceof Error ? error.message : String(error)}`)
-					process.exit(1)
+					logger.error(
+						`Error parsing parameters: ${error instanceof Error ? error.message : String(error)}`,
+					);
+					process.exit(1);
 				}
 			}
 
 			// Load configuration
-			const providerProfiles = await readProviderProfiles(options.providerFile)
-			const settings = await readGlobalSettings(options.settingsFile)
-			const customModes = await getMergedCustomModes(settings, options.modesFile)
+			const providerProfiles = await readProviderProfiles(options.providerFile);
+			const settings = await readGlobalSettings(options.settingsFile);
+			const customModes = await getMergedCustomModes(
+				settings,
+				options.modesFile,
+			);
 
 			// Get API configuration from command line options or provider profiles
-			let apiConfig = getApiConfig(options)
+			let apiConfig = getApiConfig(options);
 
 			// If no API config from options, use the one from provider profiles
 			if (!apiConfig) {
-				const currentApiConfigName = providerProfiles.currentApiConfigName
-				apiConfig = providerProfiles.apiConfigs[currentApiConfigName]
+				const currentApiConfigName = providerProfiles.currentApiConfigName;
+				apiConfig = providerProfiles.apiConfigs[currentApiConfigName];
 
 				if (!apiConfig) {
-					logger.error(`Error: API configuration '${currentApiConfigName}' not found`)
-					process.exit(1)
+					logger.error(
+						`Error: API configuration '${currentApiConfigName}' not found`,
+					);
+					process.exit(1);
 				}
 			}
 
 			// 设置 API 配置，以便工具可以使用
-			setApiConfig(apiConfig)
+			setApiConfig(apiConfig);
 
 			// Create provider
-			const provider = new Provider(apiConfig, settings, customModes)
+			const provider = new Provider(apiConfig, settings, customModes);
 
 			// Create tool use object
 			const toolUse = {
 				name,
 				params,
-			}
+			};
 
 			// 设置日志级别
-			logger.setLevel(options.logLevel)
+			logger.setLevel(options.logLevel);
 
 			// Execute tool
-			logger.info(`Executing tool: ${name}`)
-			const result = await provider.executeTool(toolUse, options.cwd, options.logLevel)
+			logger.info(`Executing tool: ${name}`);
+			const result = await provider.executeTool(
+				toolUse,
+				options.cwd,
+				options.logLevel,
+			);
 
 			// Print result
-			console.log("\n" + result + "\n")
+			console.log('\n' + result + '\n');
 		} catch (error) {
-			logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			logger.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 // List tools command
 program
-	.command("tools")
-	.description("List available tools")
-	.option("-m, --mode <mode>", "Mode to use (e.g., code, ask)", "code")
-	.option("-c, --cwd <path>", "Working directory")
-	.option("-s, --settings-file <path>", "Path to global settings file")
-	.option("-o, --modes-file <path>", "Path to custom modes file")
-	.action(async (options) => {
+	.command('tools')
+	.description('List available tools')
+	.option('-m, --mode <mode>', 'Mode to use (e.g., code, ask)', 'code')
+	.option('-c, --cwd <path>', 'Working directory')
+	.option('-s, --settings-file <path>', 'Path to global settings file')
+	.option('-o, --modes-file <path>', 'Path to custom modes file')
+	.action(async options => {
 		try {
 			// Load configuration
-			const settings = await readGlobalSettings(options.settingsFile)
-			const customModes = await getMergedCustomModes(settings, options.modesFile)
+			const settings = await readGlobalSettings(options.settingsFile);
+			const customModes = await getMergedCustomModes(
+				settings,
+				options.modesFile,
+			);
 
 			// Create dummy provider (we only need it for tool descriptions)
 			const dummyApiConfig = {
-				apiProvider: "anthropic",
-				anthropicApiKey: "dummy",
-				anthropicModelId: "dummy",
-				id: "dummy",
-			}
+				apiProvider: 'anthropic',
+				anthropicApiKey: 'dummy',
+				anthropicModelId: 'dummy',
+				id: 'dummy',
+			};
 
-			const provider = new Provider(dummyApiConfig, settings, customModes)
-			provider.setCurrentMode(options.mode)
+			const provider = new Provider(dummyApiConfig, settings, customModes);
+			provider.setCurrentMode(options.mode);
 
 			// Get tool descriptions
-			const toolDescriptions = provider.getAvailableToolDescriptions(options.cwd)
+			const toolDescriptions = provider.getAvailableToolDescriptions(
+				options.cwd,
+			);
 
 			// Print tool list
-			logger.info(`Available tools in ${options.mode} mode:`)
-			console.log("")
+			logger.info(`Available tools in ${options.mode} mode:`);
+			console.log('');
 
 			for (const [name, description] of Object.entries(toolDescriptions)) {
-				logger.success(name)
-				console.log(description)
-				console.log("")
+				logger.success(name);
+				console.log(description);
+				console.log('');
 			}
 		} catch (error) {
-			logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			logger.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 // MCP stdio command
 program
-	.command("mcp-stdio")
-	.description("Start the MCP stdio server for external clients to connect")
-	.option("-c, --provider-file <path>", "Path to provider profiles file")
-	.option("-s, --settings-file <path>", "Path to global settings file")
-	.option("-m, --modes-file <path>", "Path to custom modes file")
-	.option("--api-provider <provider>", "API provider to use (anthropic, openai)")
-	.option("--openai-api-key <key>", "OpenAI API key")
-	.option("--openai-base-url <url>", "OpenAI API base URL")
-	.option("--openai-model <model>", "OpenAI model ID")
-	.option("--stream-mode", "Enable stream mode for OpenAI API calls")
-	.option("--anthropic-api-key <key>", "Anthropic API key")
-	.option("--anthropic-model <model>", "Anthropic model ID")
-	.action(async (options) => {
+	.command('mcp-stdio')
+	.description('Start the MCP stdio server for external clients to connect')
+	.option('-c, --provider-file <path>', 'Path to provider profiles file')
+	.option('-s, --settings-file <path>', 'Path to global settings file')
+	.option('-m, --modes-file <path>', 'Path to custom modes file')
+	.option(
+		'--api-provider <provider>',
+		'API provider to use (anthropic, openai)',
+	)
+	.option('--openai-api-key <key>', 'OpenAI API key')
+	.option('--openai-base-url <url>', 'OpenAI API base URL')
+	.option('--openai-model <model>', 'OpenAI model ID')
+	.option('--stream-mode', 'Enable stream mode for OpenAI API calls')
+	.option('--anthropic-api-key <key>', 'Anthropic API key')
+	.option('--anthropic-model <model>', 'Anthropic model ID')
+	.action(async options => {
 		try {
 			// Redirect console.log to stderr to avoid interfering with MCP protocol
 			console.log = function (...args) {
-				console.error(...args)
-			}
+				console.error(...args);
+			};
 
-			console.error("Starting MCP stdio server...")
+			console.error('Starting MCP stdio server...');
 
-			const server = new McpStdioServer(options)
-			const success = await server.start()
+			const server = new McpStdioServer(options);
+			const success = await server.start();
 
 			if (success) {
-				console.error("MCP stdio server started successfully")
-				console.error("Waiting for messages on stdin...")
+				console.error('MCP stdio server started successfully');
+				console.error('Waiting for messages on stdin...');
 
 				// Keep the process running until it's terminated
-				process.on("SIGINT", async () => {
-					console.error("Shutting down MCP stdio server...")
-					await server.stop()
-					console.error("MCP stdio server stopped")
-					process.exit(0)
-				})
+				process.on('SIGINT', async () => {
+					console.error('Shutting down MCP stdio server...');
+					await server.stop();
+					console.error('MCP stdio server stopped');
+					process.exit(0);
+				});
 			} else {
-				console.error("Failed to start MCP stdio server")
-				process.exit(1)
+				console.error('Failed to start MCP stdio server');
+				process.exit(1);
 			}
 		} catch (error) {
-			console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			console.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 // MCP SSE server command
 program
-	.command("mcp-sse")
-	.description("Start the MCP SSE server for external clients to connect via SSE")
-	.option("-p, --port <port>", "Port to listen on", "3000")
-	.option("-c, --provider-file <path>", "Path to provider profiles file")
-	.option("-s, --settings-file <path>", "Path to global settings file")
-	.option("-m, --modes-file <path>", "Path to custom modes file")
-	.option("--api-provider <provider>", "API provider to use (anthropic, openai)")
-	.option("--openai-api-key <key>", "OpenAI API key")
-	.option("--openai-base-url <url>", "OpenAI API base URL")
-	.option("--openai-model <model>", "OpenAI model ID")
-	.option("--stream-mode", "Enable stream mode for OpenAI API calls")
-	.option("--anthropic-api-key <key>", "Anthropic API key")
-	.option("--anthropic-model <model>", "Anthropic model ID")
-	.action(async (options) => {
+	.command('mcp-sse')
+	.description(
+		'Start the MCP SSE server for external clients to connect via SSE',
+	)
+	.option('-p, --port <port>', 'Port to listen on', '3000')
+	.option('-c, --provider-file <path>', 'Path to provider profiles file')
+	.option('-s, --settings-file <path>', 'Path to global settings file')
+	.option('-m, --modes-file <path>', 'Path to custom modes file')
+	.option(
+		'--api-provider <provider>',
+		'API provider to use (anthropic, openai)',
+	)
+	.option('--openai-api-key <key>', 'OpenAI API key')
+	.option('--openai-base-url <url>', 'OpenAI API base URL')
+	.option('--openai-model <model>', 'OpenAI model ID')
+	.option('--stream-mode', 'Enable stream mode for OpenAI API calls')
+	.option('--anthropic-api-key <key>', 'Anthropic API key')
+	.option('--anthropic-model <model>', 'Anthropic model ID')
+	.action(async options => {
 		try {
-			const port = parseInt(options.port, 10)
+			const port = parseInt(options.port, 10);
 
-			logger.info(`Starting MCP SSE server on port ${port}...`)
+			logger.info(`Starting MCP SSE server on port ${port}...`);
 
-			const server = new McpSseServer(port, options)
+			const server = new McpSseServer(port, options);
 
-			const success = await server.start()
+			const success = await server.start();
 
 			if (success) {
-				const status = await server.getStatus()
-				logger.success(`MCP SSE server started successfully at ${status.url}`)
-				logger.progress(`SSE endpoint available at ${status.url}/sse`)
-				logger.progress(`Messages endpoint available at ${status.url}/messages`)
-				logger.progress("Press Ctrl+C to stop the server")
+				const status = await server.getStatus();
+				logger.success(`MCP SSE server started successfully at ${status.url}`);
+				logger.progress(`SSE endpoint available at ${status.url}/sse`);
+				logger.progress(
+					`Messages endpoint available at ${status.url}/messages`,
+				);
+				logger.progress('Press Ctrl+C to stop the server');
 
 				// Keep the process running until it's terminated
-				process.on("SIGINT", async () => {
-					logger.progress("Shutting down MCP SSE server...")
-					await server.stop()
-					logger.success("MCP SSE server stopped")
-					process.exit(0)
-				})
+				process.on('SIGINT', async () => {
+					logger.progress('Shutting down MCP SSE server...');
+					await server.stop();
+					logger.success('MCP SSE server stopped');
+					process.exit(0);
+				});
 			} else {
-				logger.error("Failed to start MCP SSE server")
-				process.exit(1)
+				logger.error('Failed to start MCP SSE server');
+				process.exit(1);
 			}
 		} catch (error) {
-			logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			logger.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 // Add share command
-program.addCommand(createShareCommand())
+program.addCommand(createShareCommand());
 
 // Add import settings command
-program.addCommand(createImportSettingsCommand())
+program.addCommand(createImportSettingsCommand());
 
 // Add RAG configuration command
-program.addCommand(createRAGConfigCommand())
+program.addCommand(createRAGConfigCommand());
 
 // Start server command
 program
-	.command("server")
-	.description("Start the Roo server")
-	.option("-p, --port <port>", "Port to listen on", "3000")
-	.option("-c, --provider-file <path>", "Path to provider profiles file")
-	.option("-s, --settings-file <path>", "Path to global settings file")
-	.option("-m, --modes-file <path>", "Path to custom modes file")
-	.action(async (options) => {
+	.command('server')
+	.description('Start the Roo server')
+	.option('-p, --port <port>', 'Port to listen on', '3000')
+	.option('-c, --provider-file <path>', 'Path to provider profiles file')
+	.option('-s, --settings-file <path>', 'Path to global settings file')
+	.option('-m, --modes-file <path>', 'Path to custom modes file')
+	.action(async options => {
 		try {
-			const port = parseInt(options.port, 10)
+			const port = parseInt(options.port, 10);
 
-			logger.info(`Starting Roo server on port ${port}...`)
+			logger.info(`Starting Roo server on port ${port}...`);
 
-			const server = await createServer(port, options.providerFile, options.settingsFile, options.modesFile)
+			const server = await createServer(
+				port,
+				options.providerFile,
+				options.settingsFile,
+				options.modesFile,
+			);
 
-			const status = await server.start()
+			const status = await server.start();
 
-			logger.success(`Server is running at ${status.url}`)
-			logger.info(`API documentation available at ${status.url}/`)
-			logger.info(`Health check available at ${status.url}/health`)
-			logger.info(`Tools endpoint available at ${status.url}/api/tools`)
-			logger.info("Press Ctrl+C to stop the server")
+			logger.success(`Server is running at ${status.url}`);
+			logger.info(`API documentation available at ${status.url}/`);
+			logger.info(`Health check available at ${status.url}/health`);
+			logger.info(`Tools endpoint available at ${status.url}/api/tools`);
+			logger.info('Press Ctrl+C to stop the server');
 
 			// Handle graceful shutdown
-			process.on("SIGINT", async () => {
-				logger.info("Shutting down server...")
-				await server.stop()
-				logger.success("Server stopped")
-				process.exit(0)
-			})
+			process.on('SIGINT', async () => {
+				logger.info('Shutting down server...');
+				await server.stop();
+				logger.success('Server stopped');
+				process.exit(0);
+			});
 		} catch (error) {
-			logger.error(`Error starting server: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			logger.error(
+				`Error starting server: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
 		}
-	})
+	});
 
 /**
  * Load task configuration from file or create from options
@@ -493,36 +585,39 @@ program
  * @param options Command options
  * @returns Task configuration
  */
-async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<TaskConfig> {
+async function loadTaskConfig(
+	prompt: string,
+	options: CommandOptions,
+): Promise<TaskConfig> {
 	// 获取当前模式
-	const mode = options.mode || "code"
+	const mode = options.mode || 'code';
 
 	// 获取自定义模式
-	const settings = await readGlobalSettings(options.settingsFile)
-	const customModes = await getMergedCustomModes(settings, options.modesFile)
+	const settings = await readGlobalSettings(options.settingsFile);
+	const customModes = await getMergedCustomModes(settings, options.modesFile);
 
 	// 获取当前模式的自定义指令和角色定义
-	const currentMode = customModes.find((m) => m.slug === mode)
-	const modeCustomInstructions = currentMode?.customInstructions || ""
-	const modeRoleDefinition = currentMode?.roleDefinition || ""
+	const currentMode = customModes.find(m => m.slug === mode);
+	const modeCustomInstructions = currentMode?.customInstructions || '';
+	const modeRoleDefinition = currentMode?.roleDefinition || '';
 
-	let fileConfig: TaskConfig
+	let fileConfig: TaskConfig;
 
 	// Try to load from file if specified
 	if (options.configFile) {
 		// 使用 resolveFilePath 确保路径是绝对的
-		const resolvedConfigPath = resolveFilePath(options.configFile)
-		logger.info(`Loading task config from ${resolvedConfigPath}`)
+		const resolvedConfigPath = resolveFilePath(options.configFile);
+		logger.info(`Loading task config from ${resolvedConfigPath}`);
 
-		fileConfig = await readTaskConfig(resolvedConfigPath)
+		fileConfig = await readTaskConfig(resolvedConfigPath);
 
 		// 检查是否使用了默认配置（文件不存在）
-		const isDefaultConfig = fileConfig === DEFAULT_TASK_CONFIG
+		const isDefaultConfig = fileConfig === DEFAULT_TASK_CONFIG;
 		if (isDefaultConfig) {
-			logger.warn(`Config file not found, using default config`)
+			logger.warn(`Config file not found, using default config`);
 		}
 	} else {
-		fileConfig = DEFAULT_TASK_CONFIG
+		fileConfig = DEFAULT_TASK_CONFIG;
 	}
 	// Override with command line options if provided
 	return {
@@ -531,20 +626,29 @@ async function loadTaskConfig(prompt: string, options: CommandOptions): Promise<
 		mode: options.mode || fileConfig.mode,
 		cwd: options.workspace || fileConfig.cwd || process.cwd(),
 		// 简化 auto 属性的处理逻辑
-		auto: options.auto !== undefined ? options.auto : options.mode === "auto" ? true : fileConfig.auto,
+		auto:
+			options.auto !== undefined
+				? options.auto
+				: options.mode === 'auto'
+					? true
+					: fileConfig.auto,
 		rules: options.rules || fileConfig.rules,
-		customInstructions: options.customInstructions || fileConfig.customInstructions || modeCustomInstructions,
-		roleDefinition: options.roleDefinition || fileConfig.roleDefinition || modeRoleDefinition,
-	} as TaskConfig
+		customInstructions:
+			options.customInstructions ||
+			fileConfig.customInstructions ||
+			modeCustomInstructions,
+		roleDefinition:
+			options.roleDefinition || fileConfig.roleDefinition || modeRoleDefinition,
+	} as TaskConfig;
 }
 
 // Parse command line arguments
-program.parse()
+program.parse();
 
 // If no arguments, show help
 if (process.argv.length <= 2) {
-	program.help()
+	program.help();
 }
 
 // Export all library functions and types from exports.ts
-export * from "./exports"
+export * from './exports';

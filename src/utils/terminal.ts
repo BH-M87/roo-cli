@@ -1,6 +1,6 @@
-import { exec, spawn } from "child_process";
-import { promisify } from "util";
-import { logger } from "./logger";
+import { exec, spawn } from 'child_process';
+import { promisify } from 'util';
+import { logger } from './logger';
 
 const execAsync = promisify(exec);
 
@@ -11,23 +11,23 @@ const execAsync = promisify(exec);
  * @returns Command output
  */
 export async function executeCommand(
-  command: string,
-  cwd?: string
+	command: string,
+	cwd?: string,
 ): Promise<string> {
-  try {
-    const { stdout, stderr } = await execAsync(command, { cwd });
-    if (stderr) {
-      logger.error(`Command stderr: ${stderr}`);
-    }
-    return stdout;
-  } catch (error) {
-    logger.error(
-      `Error executing command: ${command}: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-    throw error;
-  }
+	try {
+		const { stdout, stderr } = await execAsync(command, { cwd });
+		if (stderr) {
+			logger.error(`Command stderr: ${stderr}`);
+		}
+		return stdout;
+	} catch (error) {
+		logger.error(
+			`Error executing command: ${command}: ${
+				error instanceof Error ? error.message : String(error)
+			}`,
+		);
+		throw error;
+	}
 }
 
 /**
@@ -37,27 +37,27 @@ export async function executeCommand(
  * @returns Promise that resolves when the command completes
  */
 export function executeInteractiveCommand(
-  command: string,
-  cwd?: string
+	command: string,
+	cwd?: string,
 ): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const [cmd, ...args] = command.split(" ");
-    const process = spawn(cmd, args, {
-      cwd,
-      stdio: "inherit",
-      shell: true,
-    });
+	return new Promise((resolve, reject) => {
+		const [cmd, ...args] = command.split(' ');
+		const process = spawn(cmd, args, {
+			cwd,
+			stdio: 'inherit',
+			shell: true,
+		});
 
-    process.on("close", (code) => {
-      if (code === 0) {
-        resolve(code);
-      } else {
-        reject(new Error(`Command failed with exit code ${code}`));
-      }
-    });
+		process.on('close', code => {
+			if (code === 0) {
+				resolve(code);
+			} else {
+				reject(new Error(`Command failed with exit code ${code}`));
+			}
+		});
 
-    process.on("error", (error) => {
-      reject(error);
-    });
-  });
+		process.on('error', error => {
+			reject(error);
+		});
+	});
 }

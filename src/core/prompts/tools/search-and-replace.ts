@@ -1,4 +1,4 @@
-import { ToolArgs } from "./types"
+import { ToolArgs } from './types';
 
 /**
  * 获取 search_and_replace 工具的描述
@@ -6,7 +6,7 @@ import { ToolArgs } from "./types"
  * @returns 工具描述
  */
 export function getSearchAndReplaceDescription(args: ToolArgs): string {
-  return `## search_and_replace
+	return `## search_and_replace
 Description: Use this tool to find and replace specific text strings or patterns (using regex) within a file. It's suitable for targeted replacements across multiple locations within the file. Supports literal text and regex patterns, case sensitivity options, and optional line ranges. Shows a diff preview before applying changes.
 
 Required Parameters:
@@ -40,5 +40,5 @@ Examples:
 <replace>new$&</replace>
 <use_regex>true</use_regex>
 <ignore_case>true</ignore_case>
-</search_and_replace>`
+</search_and_replace>`;
 }

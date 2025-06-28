@@ -1,43 +1,49 @@
-import { loadRuleFiles } from "../../rules-loader"
+import { loadRuleFiles } from '../../rules-loader';
 
 /**
  * 获取编辑指令
  * @returns 编辑指令
  */
 function getEditingInstructions(): string {
-	const instructions: string[] = []
-	const availableTools: string[] = []
+	const instructions: string[] = [];
+	const availableTools: string[] = [];
 
 	// 收集可用的编辑工具
-	availableTools.push("write_to_file (for creating new files or complete file rewrites)")
-	availableTools.push("insert_content (for adding lines to existing files)")
-	availableTools.push("search_and_replace (for finding and replacing individual pieces of text)")
+	availableTools.push(
+		'write_to_file (for creating new files or complete file rewrites)',
+	);
+	availableTools.push('insert_content (for adding lines to existing files)');
+	availableTools.push(
+		'search_and_replace (for finding and replacing individual pieces of text)',
+	);
 
 	// 基本编辑指令，提及所有可用工具
 	if (availableTools.length > 1) {
-		instructions.push(`- For editing files, you have access to these tools: ${availableTools.join(", ")}.`)
+		instructions.push(
+			`- For editing files, you have access to these tools: ${availableTools.join(', ')}.`,
+		);
 	}
 
 	// 实验性功能的附加详情
 	instructions.push(
-		"- The insert_content tool adds lines of text to files at a specific line number, such as adding a new function to a JavaScript file or inserting a new route in a Python file. Use line number 0 to append at the end of the file, or any positive number to insert before that line.",
-	)
+		'- The insert_content tool adds lines of text to files at a specific line number, such as adding a new function to a JavaScript file or inserting a new route in a Python file. Use line number 0 to append at the end of the file, or any positive number to insert before that line.',
+	);
 
 	instructions.push(
-		"- The search_and_replace tool finds and replaces text or regex in files. This tool allows you to search for a specific regex pattern or text and replace it with another value. Be cautious when using this tool to ensure you are replacing the correct text. It can support multiple operations at once.",
-	)
+		'- The search_and_replace tool finds and replaces text or regex in files. This tool allows you to search for a specific regex pattern or text and replace it with another value. Be cautious when using this tool to ensure you are replacing the correct text. It can support multiple operations at once.',
+	);
 
 	if (availableTools.length > 1) {
 		instructions.push(
-			"- You should always prefer using other editing tools over write_to_file when making changes to existing files since write_to_file is much slower and cannot handle large files.",
-		)
+			'- You should always prefer using other editing tools over write_to_file when making changes to existing files since write_to_file is much slower and cannot handle large files.',
+		);
 	}
 
 	instructions.push(
 		"- When using the write_to_file tool to modify a file, use the tool directly with the desired content. You do not need to display the content before using the tool. ALWAYS provide the COMPLETE file content in your response. This is NON-NEGOTIABLE. Partial updates or placeholders like '// rest of code unchanged' are STRICTLY FORBIDDEN. You MUST include ALL parts of the file, even if they haven't been modified. Failure to do so will result in incomplete or broken code, severely impacting the user's project.",
-	)
+	);
 
-	return instructions.join("\n")
+	return instructions.join('\n');
 }
 
 /**
@@ -46,7 +52,10 @@ function getEditingInstructions(): string {
  * @param customRules 自定义规则
  * @returns 规则部分
  */
-export async function getRulesSection(cwd: string, customRules?: string): Promise<string> {
+export async function getRulesSection(
+	cwd: string,
+	customRules?: string,
+): Promise<string> {
 	const defaultRules = `====
 
 RULES
@@ -66,21 +75,21 @@ ${getEditingInstructions()}
 - The user may provide a file's contents directly in their message, in which case you shouldn't use the read_file tool to get the file contents again since you already have it.
 - Your goal is to try to accomplish the user's task, NOT engage in a back and forth conversation.
 - You are STRICTLY FORBIDDEN from starting your messages with "Great", "Certainly", "Okay", "Sure". You should NOT be conversational in your responses, but rather direct and to the point. For example you should NOT say "Great, I've updated the CSS" but instead something like "I've updated the CSS". It is important you be clear and technical in your messages.
-- It is critical you wait for the user's response after each tool use, in order to confirm the success of the tool use. For example, if asked to make a todo app, you would create a file, wait for the user's response it was created successfully, then create another file if needed, wait for the user's response it was created successfully, etc.`
+- It is critical you wait for the user's response after each tool use, in order to confirm the success of the tool use. For example, if asked to make a todo app, you would create a file, wait for the user's response it was created successfully, then create another file if needed, wait for the user's response it was created successfully, etc.`;
 
 	// Load rules from .roo directories (global and project-local)
-	const loadedRules = await loadRuleFiles(cwd)
+	const loadedRules = await loadRuleFiles(cwd);
 
 	// Combine default rules with loaded rules and custom rules
-	let finalRules = defaultRules
+	let finalRules = defaultRules;
 
 	if (loadedRules) {
-		finalRules += `\n\n# LOADED RULES\n${loadedRules}`
+		finalRules += `\n\n# LOADED RULES\n${loadedRules}`;
 	}
 
 	if (customRules) {
-		finalRules += `\n\n# CUSTOM RULES\n\n${customRules}`
+		finalRules += `\n\n# CUSTOM RULES\n\n${customRules}`;
 	}
 
-	return finalRules
+	return finalRules;
 }

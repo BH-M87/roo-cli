@@ -1,8 +1,8 @@
-import { exec } from "child_process"
-import { promisify } from "util"
-import * as os from "os"
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import * as os from 'os';
 
-const execAsync = promisify(exec)
+const execAsync = promisify(exec);
 
 /**
  * 检查端口是否被占用
@@ -11,26 +11,26 @@ const execAsync = promisify(exec)
  */
 export async function isPortInUse(port: number): Promise<boolean> {
 	try {
-		const platform = os.platform()
-		let command: string
+		const platform = os.platform();
+		let command: string;
 
 		switch (platform) {
-			case "win32":
-				command = `netstat -ano | findstr :${port}`
-				break
-			case "darwin":
-			case "linux":
-				command = `lsof -i:${port} -t`
-				break
+			case 'win32':
+				command = `netstat -ano | findstr :${port}`;
+				break;
+			case 'darwin':
+			case 'linux':
+				command = `lsof -i:${port} -t`;
+				break;
 			default:
-				throw new Error(`Unsupported platform: ${platform}`)
+				throw new Error(`Unsupported platform: ${platform}`);
 		}
 
-		const { stdout } = await execAsync(command)
-		return stdout.trim().length > 0
+		const { stdout } = await execAsync(command);
+		return stdout.trim().length > 0;
 	} catch (error) {
 		// 如果命令执行失败，通常意味着端口未被使用
-		return false
+		return false;
 	}
 }
 
@@ -41,49 +41,49 @@ export async function isPortInUse(port: number): Promise<boolean> {
  */
 export async function killProcessOnPort(port: number): Promise<boolean> {
 	try {
-		const platform = os.platform()
-		let pid: string | null = null
+		const platform = os.platform();
+		let pid: string | null = null;
 
 		// 获取进程 ID
 		switch (platform) {
-			case "win32": {
-				const { stdout } = await execAsync(`netstat -ano | findstr :${port}`)
-				const lines = stdout.trim().split("\n")
+			case 'win32': {
+				const { stdout } = await execAsync(`netstat -ano | findstr :${port}`);
+				const lines = stdout.trim().split('\n');
 				if (lines.length > 0) {
-					const lastLine = lines[0]
-					const parts = lastLine.trim().split(/\s+/)
-					pid = parts[parts.length - 1]
+					const lastLine = lines[0];
+					const parts = lastLine.trim().split(/\s+/);
+					pid = parts[parts.length - 1];
 				}
-				break
+				break;
 			}
-			case "darwin":
-			case "linux": {
-				const { stdout } = await execAsync(`lsof -i:${port} -t`)
-				pid = stdout.trim().split("\n")[0]
-				break
+			case 'darwin':
+			case 'linux': {
+				const { stdout } = await execAsync(`lsof -i:${port} -t`);
+				pid = stdout.trim().split('\n')[0];
+				break;
 			}
 			default:
-				throw new Error(`Unsupported platform: ${platform}`)
+				throw new Error(`Unsupported platform: ${platform}`);
 		}
 
 		if (!pid) {
-			return false
+			return false;
 		}
 
 		// 终止进程
 		switch (platform) {
-			case "win32":
-				await execAsync(`taskkill /F /PID ${pid}`)
-				break
-			case "darwin":
-			case "linux":
-				await execAsync(`kill -9 ${pid}`)
-				break
+			case 'win32':
+				await execAsync(`taskkill /F /PID ${pid}`);
+				break;
+			case 'darwin':
+			case 'linux':
+				await execAsync(`kill -9 ${pid}`);
+				break;
 		}
 
-		return true
+		return true;
 	} catch (error) {
-		console.error("Error killing process:", error)
-		return false
+		console.error('Error killing process:', error);
+		return false;
 	}
 }
