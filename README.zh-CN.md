@@ -2,7 +2,20 @@
 
 参考 RooCode 实现的命令行界面，允许你从终端执行 AI 任务。
 
-Roo CLI 既可以作为命令行工具使用，也可以作为库在 Node.js 应用程序中导入使用。
+Roo CLI 既可以作为命令行工具使用，也可以作为库在 Node.js 应用程序中导入使用。它具有先进的 RAG（检索增强生成）功能，支持内存和 Qdrant 向量存储，用于语义代码搜索。
+
+## ✨ 主要特性
+
+- 🤖 **AI 驱动的任务执行**: 使用先进的 AI 模型执行复杂的编码任务
+- 🔍 **语义代码搜索**: 使用 RAG 技术通过自然语言描述查找代码
+- 🗄️ **多种向量存储**: 支持内存和 Qdrant 向量数据库
+- 🔧 **灵活配置**: 所有功能的全面配置管理
+- 🌐 **MCP 协议支持**: 与模型上下文协议集成，支持外部客户端
+- 📊 **结构化输出**: 详细的执行日志和进度跟踪
+- 🐳 **Docker 支持**: 使用 Docker 和 Docker Compose 轻松部署
+- 🛠️ **丰富的工具生态系统**: 用于文件操作、代码分析等的广泛工具集
+- 📚 **库使用**: 在应用程序中作为 Node.js 库使用
+- 🎯 **多种模式**: 针对不同类型任务的专门模式（代码、测试、调试等）
 
 ## 安装
 
@@ -253,25 +266,21 @@ roo new "创建一个简单的 Node.js HTTP 服务器" --continuous
 # 指定最大步骤数
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --max-steps 5
 
-# 设置日志级别 (debug=0, progress=1, info=2, success=3, warn=4, error=5)
+# 设置日志级别 (debug=0, info=1, success=2, warn=3, error=4)
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level debug
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 0
 
-# 设置日志级别为 progress（默认）
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level progress
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
-
-# 设置日志级别为 info（显示详细信息）
+# 设置日志级别为 info（默认）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level info
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 2
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 1
 
 # 设置日志级别为 error（最少输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level error
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 5
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 4
 
 # 设置日志级别为 always（只显示 logger.always 输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --log-level always
-roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 6
+roo new "创建一个简单的 Node.js HTTP 服务器" --log-level 5
 
 # 只输出最终结果（抑制中间输出）
 roo new "创建一个简单的 Node.js HTTP 服务器" --continuous --only-final-output
@@ -471,6 +480,130 @@ roo new "构建一个完整的前后端Web应用程序" --mode orchestrator
 3. 当前模式的设置（来自自定义模式）
 4. 默认值（最低优先级）
 
+## RAG（检索增强生成）功能
+
+Roo CLI 包含先进的 RAG 功能，支持语义代码搜索和智能代码分析。系统支持内存和 Qdrant 向量存储，适用于不同的使用场景。
+
+### 语义代码搜索
+
+语义代码搜索工具允许您基于自然语言描述而不仅仅是关键词来查找代码：
+
+```bash
+# 搜索身份验证相关代码
+roo tool semantic_code_search --params '{
+  "path": "src",
+  "query": "用户身份验证和登录功能",
+  "top_k": 5
+}'
+
+# 搜索数据库操作
+roo tool semantic_code_search --params '{
+  "path": "backend",
+  "query": "数据库查询和数据持久化",
+  "file_pattern": "**/*.{js,ts,py}",
+  "top_k": 3
+}'
+
+# 搜索错误处理模式
+roo tool semantic_code_search --params '{
+  "path": ".",
+  "query": "错误处理和异常管理"
+}'
+```
+
+### RAG 配置管理
+
+Roo CLI 通过 `rag` 命令提供全面的 RAG 配置管理：
+
+```bash
+# 查看当前 RAG 配置
+roo rag status
+
+# 配置 Qdrant 向量存储
+roo rag configure-qdrant \
+  --url http://localhost:6333 \
+  --collection my-project \
+  --dimensions 1536 \
+  --api-key your-api-key
+
+# 配置内存向量存储
+roo rag configure-memory --dimensions 256
+
+# 启用/禁用 RAG 功能
+roo rag enable
+roo rag disable
+
+# 验证当前配置
+roo rag validate
+
+# 重置为默认设置
+roo rag reset
+
+# 导出配置用于备份
+roo rag export --file rag-config.json
+
+# 从备份导入配置
+roo rag import --file rag-config.json
+```
+
+### 向量存储选项
+
+#### 内存向量存储
+
+- **最适合**: 开发、测试、小型项目
+- **优点**: 无外部依赖，快速设置
+- **缺点**: 受可用内存限制，数据不持久
+
+#### Qdrant 向量存储
+
+- **最适合**: 生产环境、大型代码库、持久存储
+- **优点**: 可扩展、持久化、高级搜索功能
+- **缺点**: 需要设置 Qdrant 服务器
+
+### RAG 配置文件
+
+您可以在 `.rooSettings` 文件中配置 RAG 设置：
+
+```json
+{
+  "ragEnabled": true,
+  "ragSettings": {
+    "vectorStore": {
+      "type": "qdrant",
+      "url": "http://localhost:6333",
+      "collectionName": "my-project-code",
+      "dimensions": 1536,
+      "apiKey": "your-api-key"
+    },
+    "autoIndexWorkspace": true,
+    "maxResultsPerQuery": 5,
+    "supportedFileTypes": ["js", "ts", "jsx", "tsx", "py", "java", "c", "cpp", "cs", "go", "rb", "php"]
+  }
+}
+```
+
+### 设置 Qdrant
+
+要使用 Qdrant 向量存储，您需要运行 Qdrant 服务器：
+
+```bash
+# 使用 Docker
+docker run -p 6333:6333 qdrant/qdrant
+
+# 使用 Docker Compose
+version: '3.8'
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  qdrant_data:
+```
+
 ### 使用工具
 
 ```bash
@@ -504,19 +637,19 @@ roo tool read_file --params '{"path": "src/index.js"}' --log-level error
 Roo CLI 支持多种日志级别，帮助您控制输出的详细程度：
 
 - **debug**: 显示所有日志信息，包括调试细节
-- **progress** (默认): 显示关键的任务执行进度和状态（包含 info 级别的所有信息）
+- **progress** (默认): 显示关键的任务执行进度和状态（包含所有 info 级别消息）
 - **info**: 显示详细的信息日志，包括技术细节
-- **success**: 只显示成功信息
-- **warn**: 只显示警告和更高级别的信息
-- **error**: 只显示错误信息
-- **always**: 显示标记为始终显示的重要信息
+- **success**: 只显示成功消息
+- **warn**: 只显示警告和更高级别的消息
+- **error**: 只显示错误消息
+- **always**: 显示标记为始终可见的消息
 
 **推荐使用**：
 
 - 日常使用：`progress` (默认) - 获得清晰的进度概览，包含所有重要信息
 - 简化输出：`info` - 只显示技术细节，不显示进度信息
 - 调试问题：`debug` - 查看最完整的执行细节
-- 自动化脚本：`error` - 只关注错误信息
+- 自动化脚本：`error` - 只关注错误消息
 
 ```bash
 # 使用默认的 progress 级别
@@ -700,6 +833,16 @@ CLI 使用多个配置文件：
   "alwaysAllowWrite": true,
   "alwaysAllowExecute": true,
   "allowedCommands": ["npm test", "npm install", "git log"],
+  "ragEnabled": true,
+  "ragSettings": {
+    "vectorStore": {
+      "type": "in-memory",
+      "dimensions": 256
+    },
+    "autoIndexWorkspace": true,
+    "maxResultsPerQuery": 5,
+    "supportedFileTypes": ["js", "ts", "jsx", "tsx", "py", "java", "c", "cpp", "cs", "go", "rb", "php"]
+  },
   "customModes": [
     {
       "slug": "test",
@@ -740,6 +883,9 @@ CLI 使用多个配置文件：
 - `POST /api/config/modes`: 更新自定义模式
 - `POST /api/config/mode`: 设置当前模式
 - `GET /api/tools`: 获取可用工具
+- `GET /api/rag/status`: 获取 RAG 配置状态
+- `POST /api/rag/configure`: 更新 RAG 配置
+- `POST /api/rag/search`: 执行语义代码搜索
 
 服务器现在支持 CORS，允许来自 Web 应用程序的跨域请求。它还提供详细的错误处理和日志记录，以便更好地进行调试。
 
@@ -790,6 +936,11 @@ OPENAI_MODEL_ID=gpt-4
 
 # 服务器配置
 PORT=3000                           # API 和 MCP SSE 服务器的端口
+
+# RAG 配置
+QDRANT_URL=http://localhost:6333     # Qdrant 服务器 URL
+QDRANT_API_KEY=your-qdrant-api-key   # Qdrant API 密钥（可选）
+QDRANT_COLLECTION=roo-code           # 默认集合名称
 
 # 用于 Docker
 WORKSPACE_PATH=/path/to/your/workspace
